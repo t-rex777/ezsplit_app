@@ -48,9 +48,10 @@ const screenHeight = Dimensions.get('window').height;
 const style = StyleSheet.create({
   cards: {},
   container: {
-    height: screenHeight,
+    height: screenHeight - 76,
     display: 'flex',
-    borderWidth: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
   },
 });
 

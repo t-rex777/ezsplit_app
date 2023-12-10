@@ -7,4 +7,8 @@ export const theme = {
   my: {
     default: 8,
   },
+  button: {
+    mx: 8,
+    my: 2,
+  },
 };
