@@ -1,10 +1,11 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button} from 'react-native-paper';
+import {INavigationProps} from './PageNavigator';
 
-interface IAddExpenseProps {}
+interface IAddExpenseProps extends INavigationProps {}
 
-const AddExpense = ({}: IAddExpenseProps): JSX.Element => {
+const AddExpense = ({navigation}: IAddExpenseProps): JSX.Element => {
   return (
     <View style={style.container}>
       <Button
@@ -12,7 +13,7 @@ const AddExpense = ({}: IAddExpenseProps): JSX.Element => {
         mode="contained"
         style={style.button}
         dark
-        onPress={() => console.log('Pressed')}>
+        onPress={() => navigation.navigate('Expense')}>
         Add Expense
       </Button>
     </View>

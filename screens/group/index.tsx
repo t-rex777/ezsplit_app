@@ -1,17 +1,19 @@
 import React from 'react';
 import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
 import {Appbar} from 'react-native-paper';
-import {AddExpense} from '../../components/addExpense';
+import {AddExpense} from '../../components/AddExpense';
+import {INavigationProps} from '../../components/PageNavigator';
 import {GroupCard} from './groupCard';
 import {Header} from './header';
 
-interface IGroupProps {}
+interface IGroupProps extends INavigationProps {}
 
-const Group = ({}: IGroupProps): JSX.Element => {
+const GroupScreen = ({navigation}: IGroupProps): JSX.Element => {
   return (
     <View style={style.container}>
       <View>
         <Appbar.Header>
+          <Appbar.BackAction onPress={() => {}} />
           <Appbar.Content title="Groups" />
           <Appbar.Action icon="magnify" />
           <Appbar.Action icon="account-multiple-plus" />
@@ -37,7 +39,7 @@ const Group = ({}: IGroupProps): JSX.Element => {
       </ScrollView>
 
       <View>
-        <AddExpense />
+        <AddExpense navigation={navigation} />
       </View>
     </View>
   );
@@ -55,4 +57,4 @@ const style = StyleSheet.create({
   },
 });
 
-export default Group;
+export default GroupScreen;

@@ -5,32 +5,29 @@
  * @format
  */
 
-import {NavigationContainer} from '@react-navigation/native';
 import React from 'react';
-import {StatusBar, useColorScheme} from 'react-native';
 import {PaperProvider} from 'react-native-paper';
+import {en, registerTranslation} from 'react-native-paper-dates';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {BottomNavigator} from './components/BottomNavigator';
+import {PageNavigator} from './components/PageNavigator';
+
+registerTranslation('en', en);
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  // const isDarkMode = useColorScheme() === 'dark';
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  // const backgroundStyle = {
+  //   backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  // };
 
   return (
     <SafeAreaProvider>
       <PaperProvider>
-        <StatusBar
+        {/* <StatusBar
           barStyle={isDarkMode ? 'light-content' : 'dark-content'}
           backgroundColor={backgroundStyle.backgroundColor}
-        />
-
-        <NavigationContainer>
-          <BottomNavigator />
-        </NavigationContainer>
+        /> */}
+        <PageNavigator />
       </PaperProvider>
     </SafeAreaProvider>
   );
