@@ -1,16 +1,10 @@
 import dayjs from 'dayjs';
-import React, {useEffect} from 'react';
+import React, {useMemo} from 'react';
 import {SubmitHandler, useForm} from 'react-hook-form';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
-import {
-  Appbar,
-  Button,
-  Chip,
-  IconButton,
-  Text,
-  TextInput,
-} from 'react-native-paper';
+import {Appbar, Button, Chip, IconButton, Text} from 'react-native-paper';
 import {DatePickerModal} from 'react-native-paper-dates';
+import {EZTextInput} from '../../components';
 import {INavigationProps} from '../../components/PageNavigator';
 import {theme} from '../../theme';
 
@@ -36,15 +30,14 @@ const DEFAULT_CATEGORY = [
 
 type TCategory = (typeof DEFAULT_CATEGORY)[number];
 
-// TODO: Add error messages
 const ExpensePage = ({navigation}: IExpensePageProps): JSX.Element => {
   const [openCalendar, setOpenCalendar] = React.useState(false);
 
   const {
     handleSubmit,
-    register,
     setValue,
     watch,
+    control,
     formState: {errors},
   } = useForm<IExpenseForm>({
     mode: 'onChange',
@@ -58,19 +51,18 @@ const ExpensePage = ({navigation}: IExpensePageProps): JSX.Element => {
     },
   });
 
-  useEffect(() => {
-    console.dir({errors});
-  }, [errors, watch]);
-
-  const [selectedCategory, date] = watch(['category', 'date']);
+  const [selectedCategory, date] = useMemo(
+    () => watch(['category', 'date']),
+    [watch],
+  );
 
   const handleCloseCalendar = React.useCallback(() => {
     setOpenCalendar(false);
   }, [setOpenCalendar]);
 
-  const handleOpenCalendar = () => {
+  const handleOpenCalendar = React.useCallback(() => {
     setOpenCalendar(true);
-  };
+  }, []);
 
   const onConfirmSingle = React.useCallback(
     (params: any) => {
@@ -80,13 +72,16 @@ const ExpensePage = ({navigation}: IExpensePageProps): JSX.Element => {
     [setValue],
   );
 
-  const handleExpense: SubmitHandler<IExpenseForm> = data => {
+  const handleExpense: SubmitHandler<IExpenseForm> = React.useCallback(data => {
     console.log({data});
-  };
+  }, []);
 
-  const handleCategory = (category: TCategory) => {
-    setValue('category', category);
-  };
+  const handleCategory = React.useCallback(
+    (category: TCategory) => {
+      setValue('category', category);
+    },
+    [setValue],
+  );
 
   return (
     <View>
@@ -102,11 +97,13 @@ const ExpensePage = ({navigation}: IExpensePageProps): JSX.Element => {
         <View style={style.expenseWith}>
           <Text variant="titleMedium">With you and: </Text>
 
-          <TextInput
-            {...register('expenseWith', {required: true})}
-            outlineColor={
-              errors.expenseWith ? theme.colors.error : theme.colors.primary
-            }
+          <EZTextInput
+            rules={{
+              validate: (v: string) => (v.length > 0 ? true : 'Required field'),
+            }}
+            name="expenseWith"
+            control={control}
+            error={errors.expenseWith?.message}
             mode="outlined"
             placeholder="Enter names, emails, phone numbers..."
           />
@@ -155,11 +152,13 @@ const ExpensePage = ({navigation}: IExpensePageProps): JSX.Element => {
         <View>
           <Text variant="titleMedium">Description</Text>
 
-          <TextInput
-            {...register('description', {required: true})}
-            outlineColor={
-              errors.description ? theme.colors.error : theme.colors.primary
-            }
+          <EZTextInput
+            rules={{
+              validate: (v: string) => (v.length > 0 ? true : 'Required field'),
+            }}
+            name="description"
+            control={control}
+            error={errors.description?.message}
             mode="outlined"
             placeholder="For eg. Fruits and Vegetables"
           />
@@ -167,11 +166,14 @@ const ExpensePage = ({navigation}: IExpensePageProps): JSX.Element => {
         <View>
           <Text variant="titleMedium">Amount</Text>
 
-          <TextInput
-            {...register('amount', {required: true})}
-            outlineColor={
-              errors.expenseWith ? theme.colors.error : theme.colors.primary
-            }
+          <EZTextInput
+            rules={{
+              validate: (v: string) =>
+                Number(v) >= 1 ? true : 'should be greater than 0',
+            }}
+            name="amount"
+            control={control}
+            error={errors.amount?.message}
             mode="outlined"
             placeholder="0.00"
             keyboardType="numeric"
@@ -180,9 +182,11 @@ const ExpensePage = ({navigation}: IExpensePageProps): JSX.Element => {
         <View>
           <Text variant="titleMedium">Note</Text>
 
-          <TextInput
-            {...register('notes')}
+          <EZTextInput
+            name="notes"
+            control={control}
             multiline
+            error={errors.notes?.message}
             style={style.notes}
             mode="outlined"
             placeholder="For eg. 500gm banana, 1L milk..."
