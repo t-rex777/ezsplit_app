@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
-import React, {useMemo} from 'react';
+import React from 'react';
 import {SubmitHandler, useForm} from 'react-hook-form';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Appbar, Button, Chip, IconButton, Text} from 'react-native-paper';
 import {DatePickerModal} from 'react-native-paper-dates';
-import {EZTextInput} from '../../components';
+import {EZTextInput} from '../../components/EZTextInput';
 import {INavigationProps} from '../../components/PageNavigator';
 import {theme} from '../../theme';
 
@@ -51,10 +51,7 @@ const ExpensePage = ({navigation}: IExpensePageProps): JSX.Element => {
     },
   });
 
-  const [selectedCategory, date] = useMemo(
-    () => watch(['category', 'date']),
-    [watch],
-  );
+  const [selectedCategory, date] = watch(['category', 'date']);
 
   const handleCloseCalendar = React.useCallback(() => {
     setOpenCalendar(false);
@@ -78,6 +75,8 @@ const ExpensePage = ({navigation}: IExpensePageProps): JSX.Element => {
 
   const handleCategory = React.useCallback(
     (category: TCategory) => {
+      console.log({category});
+
       setValue('category', category);
     },
     [setValue],
@@ -89,7 +88,7 @@ const ExpensePage = ({navigation}: IExpensePageProps): JSX.Element => {
         <Appbar.Header>
           <Appbar.BackAction onPress={() => navigation.goBack()} />
           <Appbar.Content title="Add Expense" />
-          <Appbar.Action icon="check" />
+          <Appbar.Action icon="check" onPress={handleSubmit(handleExpense)} />
         </Appbar.Header>
       </View>
 

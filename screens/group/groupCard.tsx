@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import {Avatar, Card, Text} from 'react-native-paper';
+import {Card, Text} from 'react-native-paper';
+import Avatar from '../../components/Avatar';
 import {theme} from '../../theme';
 
 interface IGroupCardProps {
@@ -8,13 +9,6 @@ interface IGroupCardProps {
   money: number;
   image?: string;
 }
-
-const LeftContent = ({image}: {image?: string}) =>
-  image !== undefined ? (
-    <Avatar.Image source={{uri: image}} />
-  ) : (
-    <Avatar.Icon size={40} icon="account-group-outline" />
-  );
 
 const RightContent = ({money, title}: IGroupCardProps) => (
   <View>
@@ -26,6 +20,7 @@ const RightContent = ({money, title}: IGroupCardProps) => (
     </Text>
   </View>
 );
+
 const GroupCard = ({
   money = 0,
   title = '',
@@ -36,7 +31,7 @@ const GroupCard = ({
       <Card.Title
         title="Card Title"
         subtitle="Card Subtitle"
-        left={() => <LeftContent image={image} />}
+        left={() => <Avatar image={image} />}
         right={() => <RightContent title={title} money={money} />}
       />
     </Card>
