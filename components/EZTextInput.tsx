@@ -7,6 +7,7 @@ import {
 } from 'react-hook-form';
 import {KeyboardTypeOptions, StyleProp, View, ViewStyle} from 'react-native';
 import {Text, TextInput} from 'react-native-paper';
+import {IconSource} from 'react-native-paper/lib/typescript/components/Icon';
 import {theme} from '../theme';
 
 interface ITextInputProps {
@@ -24,6 +25,9 @@ interface ITextInputProps {
     | undefined;
   keyboardType?: KeyboardTypeOptions;
   multiline?: boolean;
+  secureTextEntry?: boolean;
+  rightIcon?: IconSource;
+  onRightIconPress?: () => void;
 }
 
 function EZTextInput({
@@ -35,6 +39,9 @@ function EZTextInput({
   mode = 'outlined',
   keyboardType,
   multiline,
+  secureTextEntry = false,
+  rightIcon: RightIcon,
+  onRightIconPress,
 }: ITextInputProps): JSX.Element {
   const {field} = useController({
     control,
@@ -55,6 +62,12 @@ function EZTextInput({
         placeholder={placeholder}
         keyboardType={keyboardType}
         multiline={multiline}
+        secureTextEntry={secureTextEntry}
+        right={
+          RightIcon ? (
+            <TextInput.Icon onPress={onRightIconPress} icon={RightIcon} />
+          ) : undefined
+        }
       />
 
       {error.length > 0 && (

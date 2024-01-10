@@ -1,12 +1,18 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {Dimensions, StyleSheet, View} from 'react-native';
-import {Appbar, IconButton, Text} from 'react-native-paper';
+import {Appbar, Button, IconButton, Text} from 'react-native-paper';
+import {AuthModel} from '../../api/auth';
 import EZAvatar from '../../components/Avatar';
 import {INavigationProps} from '../../components/PageNavigator';
+import {theme} from '../../theme';
 
 interface IIndexProps extends INavigationProps {}
 
-const AccountScreen = ({}: IIndexProps): JSX.Element => {
+const AccountScreen = ({navigation}: IIndexProps): JSX.Element => {
+  const handleLogOut = useCallback(async () => {
+    await new AuthModel(navigation).logout();
+  }, [navigation]);
+
   return (
     <View style={style.container}>
       <View>
@@ -15,25 +21,36 @@ const AccountScreen = ({}: IIndexProps): JSX.Element => {
           <Appbar.Content title="Account" />
           <Appbar.Action icon="magnify" />
         </Appbar.Header>
+
+        <View>
+          <View style={style.profile}>
+            <View style={style.profileInfo}>
+              <EZAvatar label="MS" size={60} />
+
+              <View>
+                <Text variant="titleMedium">Morris</Text>
+                <Text variant="bodyLarge">morrisjakson@gmail.com</Text>
+              </View>
+            </View>
+
+            <IconButton
+              icon="pencil"
+              size={30}
+              onPress={() => console.log('Pressed')}
+            />
+          </View>
+        </View>
       </View>
 
       <View>
-        <View style={style.profile}>
-          <View style={style.profileInfo}>
-            <EZAvatar label="MS" size={60} />
-
-            <View>
-              <Text variant="titleMedium">Morris</Text>
-              <Text variant="bodyLarge">morrisjakson@gmail.com</Text>
-            </View>
-          </View>
-
-          <IconButton
-            icon="pencil"
-            size={30}
-            onPress={() => console.log('Pressed')}
-          />
-        </View>
+        <Button
+          mode="contained"
+          icon="logout"
+          onPress={handleLogOut}
+          style={style.logout}
+          buttonColor={theme.colors.error}>
+          Log out
+        </Button>
       </View>
     </View>
   );
@@ -44,13 +61,13 @@ export {AccountScreen};
 const screenHeight = Dimensions.get('window').height;
 
 const style = StyleSheet.create({
-  cards: {},
   profileInfo: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
+  logout: {borderRadius: 20},
   profile: {
     display: 'flex',
     flexDirection: 'row',
@@ -60,8 +77,9 @@ const style = StyleSheet.create({
   container: {
     height: screenHeight - 76,
     display: 'flex',
+    gap: 8,
     flexDirection: 'column',
-    // justifyContent: 'space-between',
+    justifyContent: 'space-between',
     paddingLeft: 16,
     paddingTop: 12,
     paddingRight: 4,
