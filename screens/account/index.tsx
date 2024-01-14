@@ -3,15 +3,20 @@ import {Dimensions, StyleSheet, View} from 'react-native';
 import {Appbar, Button, IconButton, Text} from 'react-native-paper';
 import {AuthModel} from '../../api/auth';
 import EZAvatar from '../../components/Avatar';
-import {INavigationProps} from '../../components/PageNavigator';
+import {INavigationProps, useAuth} from '../../components/PageNavigator';
 import {theme} from '../../theme';
 
 interface IIndexProps extends INavigationProps {}
 
 const AccountScreen = ({navigation}: IIndexProps): JSX.Element => {
+  const auth = useAuth();
+
   const handleLogOut = useCallback(async () => {
     await new AuthModel(navigation).logout();
-  }, [navigation]);
+    auth?.setIsAuthenticated(false);
+
+    navigation?.navigate?.('SignIn');
+  }, [auth, navigation]);
 
   return (
     <View style={style.container}>

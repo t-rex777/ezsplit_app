@@ -1,5 +1,5 @@
 import {AxiosResponse} from 'axios';
-import {resetGenericPassword, setGenericPassword} from 'react-native-keychain';
+import * as Keychain from 'react-native-keychain';
 import {INavigationProps} from '../components/PageNavigator';
 import {Client} from './client';
 
@@ -21,8 +21,8 @@ export interface IUserRegister {
 export class AuthModel extends Client {
   navigation: INavigationProps['navigation'] | undefined = undefined;
 
-  constructor(navigation: INavigationProps['navigation']) {
-    super({namespace: 'api/users', headers: {}});
+  constructor(navigation?: INavigationProps['navigation'], headers?: any) {
+    super({namespace: 'api/users', headers});
 
     this.navigation = navigation;
   }
@@ -39,9 +39,13 @@ export class AuthModel extends Client {
       });
 
       if (response.status === 200) {
-        await setGenericPassword(email, password);
-
-        this.navigation?.navigate?.('Home');
+        await Keychain.setGenericPassword(
+          email,
+          JSON.stringify({
+            __token: response.data.access_token,
+            __rtoken: response.data.refresh_token,
+          }),
+        );
       }
 
       return response;
@@ -55,9 +59,13 @@ export class AuthModel extends Client {
   }
 
   async logout(): Promise<AxiosResponse> {
-    resetGenericPassword();
+    Keychain.resetGenericPassword();
     this.navigation?.navigate?.('SignIn');
 
     return {status: 200} as any;
+  }
+
+  async refresh(): Promise<AxiosResponse> {
+    return await this.post('refresh');
   }
 }

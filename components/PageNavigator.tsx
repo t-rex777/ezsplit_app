@@ -4,9 +4,11 @@ import {
   ParamListBase,
 } from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {createContext} from 'react';
+import React, {createContext, useContext} from 'react';
+import * as Keychain from 'react-native-keychain';
 
-import {getGenericPassword} from 'react-native-keychain';
+import {useEffectOnce} from 'react-use';
+import {AuthModel} from '../api/auth';
 import {ExpensePage} from '../screens/expense';
 import {HomeScreen} from '../screens/home';
 import {SignInPage} from '../screens/signin';
@@ -24,57 +26,66 @@ const Stack = createNativeStackNavigator();
 
 const AuthContext = createContext<IAuthContext | undefined>(undefined);
 
+export const useAuth = (): IAuthContext | undefined => {
+  return useContext(AuthContext);
+};
+
 const PageNavigator = (): JSX.Element => {
-  // const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(true);
 
-  const checkAuth = async () => {
-    return !!(await getGenericPassword());
-  };
+  useEffectOnce(() => {
+    (async () => {
+      const cred = (await Keychain.getGenericPassword()) as any;
 
-  // eslint-disable-next-line no-void
-  const isAuthenticated = void checkAuth();
+      if (cred !== false) {
+        const token = JSON.parse(cred.password).__rtoken;
+        const response = await new AuthModel(undefined, {
+          authorization: `Bearer ${token}`,
+        }).refresh();
 
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     const cred = await getGenericPassword();
-  //     if (cred !== false) {
-  //       setIsAuthenticated(true);
-  //     }
-  //   };
+        if (response.status === 200) {
+          await Keychain.setGenericPassword(
+            cred.username,
+            JSON.stringify({
+              __token: response.data.access_token,
+              __rtoken: response.data.refresh_token,
+            }),
+          );
+        }
 
-  //   checkAuth();
-  // }, []);
-
-  console.log({isAuthenticated});
+        setIsAuthenticated(true);
+      }
+    })();
+  });
 
   return (
-    // <AuthContext.Provider value={{isAuthenticated, setIsAuthenticated}}>
-    <NavigationContainer>
-      <Stack.Navigator>
-        {isAuthenticated ? (
-          <>
-            <Stack.Screen
-              name="Home"
-              component={HomeScreen}
-              options={{headerShown: false}}
-            />
+    <AuthContext.Provider value={{isAuthenticated, setIsAuthenticated}}>
+      <NavigationContainer>
+        <Stack.Navigator>
+          {isAuthenticated ? (
+            <>
+              <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                options={{headerShown: false}}
+              />
 
+              <Stack.Screen
+                name="Expense"
+                component={ExpensePage}
+                options={{headerShown: false}}
+              />
+            </>
+          ) : (
             <Stack.Screen
-              name="Expense"
-              component={ExpensePage}
+              name="SignIn"
+              component={SignInPage}
               options={{headerShown: false}}
             />
-          </>
-        ) : (
-          <Stack.Screen
-            name="SignIn"
-            component={SignInPage}
-            options={{headerShown: false}}
-          />
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
-    // </AuthContext.Provider>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AuthContext.Provider>
   );
 };
 

@@ -4,7 +4,7 @@ import {StyleSheet, View} from 'react-native';
 import {Button} from 'react-native-paper';
 import {AuthModel} from '../../api/auth';
 import {EZTextInput} from '../../components/EZTextInput';
-import {INavigationProps} from '../../components/PageNavigator';
+import {INavigationProps, useAuth} from '../../components/PageNavigator';
 
 interface ISignInPageProps extends INavigationProps {}
 
@@ -17,6 +17,8 @@ const PASSWORD_REGEX = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/);
 
 const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
   const [secure, setSecure] = React.useState(true);
+
+  const auth = useAuth();
 
   const {
     handleSubmit,
@@ -31,8 +33,16 @@ const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
   });
 
   const handleExpense: SubmitHandler<ISignInPageForm> = React.useCallback(
-    async data => await new AuthModel(navigation).login(data),
-    [navigation],
+    async data => {
+      const response = await new AuthModel(navigation).login(data);
+
+      if (response.status === 200) {
+        auth?.setIsAuthenticated(true);
+
+        navigation?.navigate?.('Home');
+      }
+    },
+    [auth, navigation],
   );
 
   return (
