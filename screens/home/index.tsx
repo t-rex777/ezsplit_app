@@ -6,9 +6,6 @@ import {createMaterialBottomTabNavigator} from 'react-native-paper/react-navigat
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {theme} from '../../theme';
 import {AccountScreen} from '../account';
-import {ActivityScreen} from '../activity';
-import {FriendScreen} from '../friend';
-import GroupScreen from '../group';
 
 interface IHomeProps {}
 
@@ -25,23 +22,23 @@ const GroupTabIcon = ({
 const HomeScreen = ({}: IHomeProps): JSX.Element => {
   return (
     <Tab.Navigator>
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Groups"
         component={GroupScreen}
         options={{
           tabBarIcon: props => <GroupTabIcon icon="account-group" {...props} />,
         }}
-      />
+      /> */}
 
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Friends"
         component={FriendScreen}
         options={{
           tabBarIcon: props => <GroupTabIcon icon="account" {...props} />,
         }}
-      />
+      /> */}
 
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Activity"
         component={ActivityScreen}
         options={{
@@ -49,7 +46,7 @@ const HomeScreen = ({}: IHomeProps): JSX.Element => {
             <GroupTabIcon icon="chart-timeline-variant-shimmer" {...props} />
           ),
         }}
-      />
+      /> */}
 
       <Tab.Screen
         name="Account"

@@ -1,22 +1,23 @@
 import React, {useCallback} from 'react';
 import {Dimensions, StyleSheet, View} from 'react-native';
 import {Appbar, Button, IconButton, Text} from 'react-native-paper';
-import {AuthModel} from '../../api/auth';
 import EZAvatar from '../../components/Avatar';
-import {INavigationProps, useAuth} from '../../components/PageNavigator';
+import {INavigationProps} from '../../components/PageNavigator';
+import {useCurrentUser} from '../../hooks/useCurrentUser';
 import {theme} from '../../theme';
 
 interface IIndexProps extends INavigationProps {}
 
 const AccountScreen = ({navigation}: IIndexProps): JSX.Element => {
-  const auth = useAuth();
+  const {user, isFetching, logout} = useCurrentUser(navigation);
 
   const handleLogOut = useCallback(async () => {
-    await new AuthModel(navigation).logout();
-    auth?.setIsAuthenticated(false);
+    await logout.mutateAsync();
+  }, [logout]);
 
-    navigation?.navigate?.('SignIn');
-  }, [auth, navigation]);
+  if (isFetching) {
+    return <Text variant="titleMedium">Loading...</Text>;
+  }
 
   return (
     <View style={style.container}>
@@ -33,8 +34,8 @@ const AccountScreen = ({navigation}: IIndexProps): JSX.Element => {
               <EZAvatar label="MS" size={60} />
 
               <View>
-                <Text variant="titleMedium">Morris</Text>
-                <Text variant="bodyLarge">morrisjakson@gmail.com</Text>
+                <Text variant="titleMedium">{user.name}</Text>
+                <Text variant="bodyLarge">{user.email}</Text>
               </View>
             </View>
 

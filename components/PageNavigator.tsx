@@ -7,6 +7,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React, {createContext, useContext} from 'react';
 import * as Keychain from 'react-native-keychain';
 
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {useEffectOnce} from 'react-use';
 import {AuthModel} from '../api/auth';
 import {ExpensePage} from '../screens/expense';
@@ -26,20 +27,32 @@ const Stack = createNativeStackNavigator();
 
 const AuthContext = createContext<IAuthContext | undefined>(undefined);
 
-export const useAuth = (): IAuthContext | undefined => {
+export const useAuth = () => {
   return useContext(AuthContext);
 };
 
 const PageNavigator = (): JSX.Element => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: true,
+        staleTime: undefined,
+        retry: false,
+      },
+    },
+  });
+
   const [isAuthenticated, setIsAuthenticated] = React.useState(true);
 
   useEffectOnce(() => {
+    // wrap this into useAuth
     (async () => {
       const cred = (await Keychain.getGenericPassword()) as any;
 
       if (cred !== false) {
         const token = JSON.parse(cred.password).__rtoken;
-        const response = await new AuthModel(undefined, {
+
+        const response = await new AuthModel({
           authorization: `Bearer ${token}`,
         }).refresh();
 
@@ -59,33 +72,35 @@ const PageNavigator = (): JSX.Element => {
   });
 
   return (
-    <AuthContext.Provider value={{isAuthenticated, setIsAuthenticated}}>
-      <NavigationContainer>
-        <Stack.Navigator>
-          {isAuthenticated ? (
-            <>
-              <Stack.Screen
-                name="Home"
-                component={HomeScreen}
-                options={{headerShown: false}}
-              />
+    <QueryClientProvider client={queryClient}>
+      <AuthContext.Provider value={{isAuthenticated, setIsAuthenticated}}>
+        <NavigationContainer>
+          <Stack.Navigator>
+            {isAuthenticated ? (
+              <>
+                <Stack.Screen
+                  name="Home"
+                  component={HomeScreen}
+                  options={{headerShown: false}}
+                />
 
+                <Stack.Screen
+                  name="Expense"
+                  component={ExpensePage}
+                  options={{headerShown: false}}
+                />
+              </>
+            ) : (
               <Stack.Screen
-                name="Expense"
-                component={ExpensePage}
+                name="SignIn"
+                component={SignInPage}
                 options={{headerShown: false}}
               />
-            </>
-          ) : (
-            <Stack.Screen
-              name="SignIn"
-              component={SignInPage}
-              options={{headerShown: false}}
-            />
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    </AuthContext.Provider>
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AuthContext.Provider>
+    </QueryClientProvider>
   );
 };
 

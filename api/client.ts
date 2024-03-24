@@ -38,6 +38,7 @@ export class Client {
 
   constructor({namespace, headers}: IClientParams) {
     this.namespace = namespace;
+
     this.headers = headers;
   }
 

@@ -2,9 +2,9 @@ import React from 'react';
 import {SubmitHandler, useForm} from 'react-hook-form';
 import {StyleSheet, View} from 'react-native';
 import {Button} from 'react-native-paper';
-import {AuthModel} from '../../api/auth';
 import {EZTextInput} from '../../components/EZTextInput';
-import {INavigationProps, useAuth} from '../../components/PageNavigator';
+import {INavigationProps} from '../../components/PageNavigator';
+import {useCurrentUser} from '../../hooks/useCurrentUser';
 
 interface ISignInPageProps extends INavigationProps {}
 
@@ -18,7 +18,7 @@ const PASSWORD_REGEX = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/);
 const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
   const [secure, setSecure] = React.useState(true);
 
-  const auth = useAuth();
+  const {signIn} = useCurrentUser(navigation);
 
   const {
     handleSubmit,
@@ -32,17 +32,12 @@ const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
     },
   });
 
-  const handleExpense: SubmitHandler<ISignInPageForm> = React.useCallback(
+  const handleSignIn: SubmitHandler<ISignInPageForm> = React.useCallback(
     async data => {
-      const response = await new AuthModel(navigation).login(data);
-
-      if (response.status === 200) {
-        auth?.setIsAuthenticated(true);
-
-        navigation?.navigate?.('Home');
-      }
+      await signIn(data);
+      navigation.navigate('Home');
     },
-    [auth, navigation],
+    [navigation, signIn],
   );
 
   return (
@@ -80,7 +75,7 @@ const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
         mode="contained"
         icon="login"
         style={style.submitButton}
-        onPress={handleSubmit(handleExpense)}>
+        onPress={handleSubmit(handleSignIn)}>
         Sign In
       </Button>
     </View>
