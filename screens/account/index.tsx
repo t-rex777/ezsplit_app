@@ -5,6 +5,7 @@ import EZAvatar from '../../components/Avatar';
 import {INavigationProps} from '../../components/PageNavigator';
 import {useCurrentUser} from '../../hooks/useCurrentUser';
 import {theme} from '../../theme';
+import {getAvatarFallbackValue} from '../../utils/fallback';
 
 interface IIndexProps extends INavigationProps {}
 
@@ -31,7 +32,7 @@ const AccountScreen = ({navigation}: IIndexProps): JSX.Element => {
         <View>
           <View style={style.profile}>
             <View style={style.profileInfo}>
-              <EZAvatar label="MS" size={60} />
+              <EZAvatar label={getAvatarFallbackValue(user.name)} size={60} />
 
               <View>
                 <Text variant="titleMedium">{user.name}</Text>

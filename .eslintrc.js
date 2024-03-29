@@ -8,5 +8,6 @@ module.exports = {
         allow: ['warn', 'error'],
       },
     ],
+    'react-native/no-inline-styles': 0,
   },
 };

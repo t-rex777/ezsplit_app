@@ -3,11 +3,14 @@ import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
 import {Appbar} from 'react-native-paper';
 import {AddExpense} from '../../components/AddExpense';
 import {INavigationProps} from '../../components/PageNavigator';
+import {useFriendExpense} from '../../hooks/useFriendExpense';
 import {FriendCard} from './friendCard';
 
 interface IIndexProps extends INavigationProps {}
 
 const FriendScreen = ({navigation}: IIndexProps): JSX.Element => {
+  const {friendExpenses} = useFriendExpense();
+
   return (
     <View style={style.container}>
       <View>
@@ -21,126 +24,9 @@ const FriendScreen = ({navigation}: IIndexProps): JSX.Element => {
 
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         <View style={style.cards}>
-          <FriendCard
-            title={'Roberts'}
-            groups={[
-              {
-                id: '1',
-                money: 99.99,
-                name: 'hello',
-              },
-              {
-                id: '1',
-                money: 929.99,
-                name: 'Chloe',
-              },
-              {
-                id: '1',
-                money: 199.99,
-                name: 'Lavina',
-              },
-            ]}
-          />
-          <FriendCard
-            title={'Roberts'}
-            groups={[
-              {
-                id: '1',
-                money: 99.99,
-                name: 'hello',
-              },
-              {
-                id: '1',
-                money: 929.99,
-                name: 'Chloe',
-              },
-              {
-                id: '1',
-                money: 199.99,
-                name: 'Lavina',
-              },
-            ]}
-          />
-          <FriendCard
-            title={'Roberts'}
-            groups={[
-              {
-                id: '1',
-                money: 99.99,
-                name: 'hello',
-              },
-              {
-                id: '1',
-                money: 929.99,
-                name: 'Chloe',
-              },
-              {
-                id: '1',
-                money: 199.99,
-                name: 'Lavina',
-              },
-            ]}
-          />
-          <FriendCard
-            title={'Roberts'}
-            groups={[
-              {
-                id: '1',
-                money: 99.99,
-                name: 'hello',
-              },
-              {
-                id: '1',
-                money: 929.99,
-                name: 'Chloe',
-              },
-              {
-                id: '1',
-                money: 199.99,
-                name: 'Lavina',
-              },
-            ]}
-          />
-          <FriendCard
-            title={'Roberts'}
-            groups={[
-              {
-                id: '1',
-                money: 99.99,
-                name: 'hello',
-              },
-              {
-                id: '1',
-                money: 929.99,
-                name: 'Chloe',
-              },
-              {
-                id: '1',
-                money: 199.99,
-                name: 'Lavina',
-              },
-            ]}
-          />
-          <FriendCard
-            title={'Roberts'}
-            groups={[
-              {
-                id: '1',
-                money: 99.99,
-                name: 'hello',
-              },
-              {
-                id: '1',
-                money: 929.99,
-                name: 'Chloe',
-              },
-              {
-                id: '1',
-                money: 199.99,
-                name: 'Lavina',
-              },
-            ]}
-          />
+          {friendExpenses.map(friendExpense => (
+            <FriendCard key={friendExpense.id} data={friendExpense} />
+          ))}
         </View>
       </ScrollView>
 

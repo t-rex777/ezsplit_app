@@ -2,31 +2,6 @@ import {EZSPLIT_API_URL} from '@env';
 import axios, {Method} from 'axios';
 import * as AxiosLogger from 'axios-logger';
 
-interface IError {
-  source: {
-    pointer: string;
-  };
-  detail: string;
-}
-interface IErrorProps {
-  errors: IError[];
-}
-
-interface IResponse {
-  errors: Array<Record<string, string>>;
-}
-export default function normalizeErrors({errors}: IErrorProps): IResponse {
-  return {
-    errors: errors.reduce((acc: IResponse['errors'], cur) => {
-      acc.push({
-        [cur.source.pointer.substring(cur.source.pointer.lastIndexOf('/') + 1)]:
-          cur.detail,
-      });
-      return acc;
-    }, []),
-  };
-}
-
 interface IClientParams {
   namespace: string;
   headers?: Record<string, any>;
@@ -81,11 +56,11 @@ export class Client {
     return await this.instance('post', resource, data);
   }
 
-  async put(resource: string, resourceId: string) {
-    return await this.instance('put', `${resource}/${resourceId}`);
+  async put(resource: string, resourceId: string, data = {}) {
+    return await this.instance('put', `${resource}/${resourceId}`, data);
   }
 
-  async delete(resourceId: string) {
-    return await this.instance('delete', resourceId);
+  async delete(resource: string, resourceId: string) {
+    return await this.instance('delete', `${resource}/${resourceId}`);
   }
 }

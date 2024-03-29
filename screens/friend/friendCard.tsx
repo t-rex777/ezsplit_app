@@ -1,8 +1,10 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Card, Text} from 'react-native-paper';
+import {IFriendExpense} from '../../api/friendExpense';
 import Avatar from '../../components/Avatar';
 import {theme} from '../../theme';
+import {getAvatarFallbackValue} from '../../utils/fallback';
 
 export interface IGroupExpense {
   id: string;
@@ -11,9 +13,7 @@ export interface IGroupExpense {
 }
 
 interface IFriendCardProps {
-  title: string;
-  image?: string;
-  groups: IGroupExpense[];
+  data: IFriendExpense;
 }
 
 const RightContent = ({name, group}: {name: string; group: IGroupExpense}) => (
@@ -28,9 +28,7 @@ const RightContent = ({name, group}: {name: string; group: IGroupExpense}) => (
 );
 
 const FriendCard = ({
-  groups = [],
-  title = '',
-  image,
+  data: {imageUrl, isLender, name, totalAmount, currency},
 }: IFriendCardProps): JSX.Element => {
   return (
     <Card style={style.container}>
@@ -43,17 +41,22 @@ const FriendCard = ({
               alignItems: 'center',
               gap: 8,
             }}>
-            <Avatar image={image} />
-            <Text variant="titleMedium">Morris</Text>
+            <Avatar image={imageUrl} label={getAvatarFallbackValue(name)} />
+
+            <Text variant="titleMedium">{name}</Text>
           </View>
 
           <View>
-            <Text variant="bodySmall">You owe</Text>
-            <Text>338478</Text>
+            <Text variant="bodySmall">
+              {isLender ? 'You owe' : 'You are owed'}
+            </Text>
+            <Text>
+              {currency} {totalAmount}
+            </Text>
           </View>
         </View>
 
-        <View
+        {/* <View
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -63,7 +66,7 @@ const FriendCard = ({
           {groups.map(group => (
             <RightContent name={title} group={group} key={group.id} />
           ))}
-        </View>
+        </View> */}
       </Card.Content>
     </Card>
   );

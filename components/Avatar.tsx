@@ -8,7 +8,7 @@ interface IEZAvatarProps {
 }
 
 const EZAvatar = ({image, label = '', size = 40}: IEZAvatarProps) =>
-  image !== undefined ? (
+  Boolean(image) === true ? (
     <Avatar.Image size={size} source={{uri: image}} />
   ) : (
     <Avatar.Text size={size} label={label} />

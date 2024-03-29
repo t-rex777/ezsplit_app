@@ -6,6 +6,7 @@ import {createMaterialBottomTabNavigator} from 'react-native-paper/react-navigat
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {theme} from '../../theme';
 import {AccountScreen} from '../account';
+import {FriendScreen} from '../friend';
 
 interface IHomeProps {}
 
@@ -30,13 +31,13 @@ const HomeScreen = ({}: IHomeProps): JSX.Element => {
         }}
       /> */}
 
-      {/* <Tab.Screen
+      <Tab.Screen
         name="Friends"
         component={FriendScreen}
         options={{
           tabBarIcon: props => <GroupTabIcon icon="account" {...props} />,
         }}
-      /> */}
+      />
 
       {/* <Tab.Screen
         name="Activity"

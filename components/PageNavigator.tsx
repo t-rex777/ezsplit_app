@@ -49,6 +49,9 @@ const PageNavigator = (): JSX.Element => {
     (async () => {
       const cred = (await Keychain.getGenericPassword()) as any;
 
+      // eslint-disable-next-line no-console
+      console.log({keychainCred: cred});
+
       if (cred !== false) {
         const token = JSON.parse(cred.password).__rtoken;
 
