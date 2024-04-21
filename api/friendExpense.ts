@@ -2,14 +2,14 @@ import {AxiosResponse} from 'axios';
 import {Client} from './client';
 
 interface IExpense {
-  user_id: number;
+  user_id: string;
   amount: string;
   is_lender: boolean;
 }
 
-interface ICreateFriendExpenseParams {
+export interface ICreateFriendExpenseParams {
   name: string;
-  categoryId: number;
+  categoryId: string;
   description: string;
   currency: string;
   totalAmount: string;
@@ -21,7 +21,7 @@ interface IUpdateFriendExpenseParams extends ICreateFriendExpenseParams {
   id: string;
 }
 
-export interface IFriendExpense {
+export interface IFriendExpenseListItem {
   id: string;
   imageUrl: string;
   name: string;
@@ -30,24 +30,55 @@ export interface IFriendExpense {
   currency: string;
 }
 
+export interface IFriendExpenses {
+  id: number;
+  name: string;
+  description: string;
+  currency: string;
+  totalAmount: string;
+  image: string;
+  createdAt: string;
+  modifiedAt: string;
+  category: {
+    id: number;
+    name: string;
+    image: string;
+    createdAt: string;
+  };
+  users: {
+    id: number;
+    name: string;
+    email: string;
+    dob: string;
+    image: string;
+    currency: string;
+    groupId: number | null;
+    createdAt: string;
+    amount: string;
+    isLender: boolean;
+  }[];
+}
+
 export class FriendExpense extends Client {
   constructor(headers?: Record<string, any>) {
     super({namespace: 'api/expenses/user', headers});
   }
 
-  async all(): Promise<AxiosResponse<{data: IFriendExpense[]}>> {
+  async all(): Promise<AxiosResponse<{data: IFriendExpenseListItem[]}>> {
     try {
       return await this.get('');
     } catch (error) {
       console.error(error);
 
-      throw new Error('Could not fetch all friend"s expenses');
+      throw new Error("Could not fetch all friend's expenses");
     }
   }
 
-  async find(friendId: string): Promise<AxiosResponse<any>> {
+  async findFriendExpenses(
+    friendId: string,
+  ): Promise<AxiosResponse<{data: IFriendExpenses[]}>> {
     try {
-      return await this.find(friendId);
+      return await this.find('friend', friendId);
     } catch (error) {
       console.error(error);
 

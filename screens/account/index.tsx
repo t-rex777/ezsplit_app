@@ -43,6 +43,7 @@ const AccountScreen = ({navigation}: IIndexProps): JSX.Element => {
             <IconButton
               icon="pencil"
               size={30}
+              // eslint-disable-next-line no-console
               onPress={() => console.log('Pressed')}
             />
           </View>
@@ -84,12 +85,12 @@ const style = StyleSheet.create({
   container: {
     height: screenHeight - 76,
     display: 'flex',
-    gap: 8,
     flexDirection: 'column',
+    gap: 8,
     justifyContent: 'space-between',
     paddingLeft: 16,
     paddingTop: 12,
-    paddingRight: 4,
+    paddingRight: 16,
     paddingBottom: 12,
   },
 });

@@ -1,11 +1,27 @@
-import {useQuery} from '@tanstack/react-query';
-import {useMemo} from 'react';
-import * as Keychain from 'react-native-keychain';
-import {FriendExpense, IFriendExpense} from '../api/friendExpense';
+import {
+  UseMutationResult,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import {
+  FriendExpense,
+  ICreateFriendExpenseParams,
+  IFriendExpenseListItem,
+  IFriendExpenses,
+} from '../api/friendExpense';
+import {INavigationProps} from '../components/PageNavigator';
+import {useModel} from './helper';
 import {userQueryKey} from './useCurrentUser';
 
-interface IFriendExpenseContext {
-  friendExpenses: IFriendExpense[];
+interface IFriendExpenseListContext {
+  friendExpenses: IFriendExpenseListItem[];
+  isFetching: boolean;
+  create: UseMutationResult<void, Error, ICreateFriendExpenseParams, unknown>;
+}
+
+interface IFriendExpensesContext {
+  friendExpenses: IFriendExpenses[];
   isFetching: boolean;
 }
 
@@ -17,18 +33,14 @@ export const friendExpenseKey = (id?: string) => {
   return ['friendExpenses', userQueryKey()];
 };
 
-export const useFriendExpense = (): IFriendExpenseContext => {
-  const FriendModel = useMemo(async () => {
-    const key = await Keychain.getGenericPassword();
+export const useFriendExpenseList = (
+  navigation?: INavigationProps['navigation'],
+): IFriendExpenseListContext => {
+  const queryClient = useQueryClient();
 
-    const headers =
-      key !== false
-        ? {authorization: 'Bearer ' + JSON.parse(key.password).__token}
-        : undefined;
+  const FriendModel = useModel(FriendExpense);
 
-    return new FriendExpense(headers);
-  }, []);
-
+  // TODO: useInfinite
   const {data, isFetching} = useQuery({
     queryKey: friendExpenseKey(),
     queryFn: async () => {
@@ -42,10 +54,42 @@ export const useFriendExpense = (): IFriendExpenseContext => {
     },
   });
 
-  console.log('FRIEND', data);
+  const create = useMutation({
+    mutationKey: friendExpenseKey(),
+    mutationFn: async (expense: ICreateFriendExpenseParams) => {
+      await (await FriendModel).create(expense);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: friendExpenseKey(),
+      });
+
+      navigation?.navigate('FriendExpenses');
+    },
+  });
 
   return {
     friendExpenses: data ?? [],
     isFetching,
+    create,
   };
+};
+
+export const useFriendExpenses = (friendId: string): IFriendExpensesContext => {
+  const FriendModel = useModel(FriendExpense);
+
+  // TODO: useInfinite
+  const {data, isFetching} = useQuery({
+    queryKey: friendExpenseKey(friendId),
+    queryFn: async () => {
+      const response = await (await FriendModel).findFriendExpenses(friendId);
+      if (response.status !== 200) {
+        throw new Error('could not fetch friend expenses');
+      }
+
+      return response.data.data;
+    },
+  });
+
+  return {friendExpenses: data ?? [], isFetching};
 };

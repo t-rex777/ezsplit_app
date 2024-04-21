@@ -1,15 +1,22 @@
 import React from 'react';
 import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
 import {Appbar} from 'react-native-paper';
+import {IFriendExpenseListItem} from '../../api/friendExpense';
 import {AddExpense} from '../../components/AddExpense';
 import {INavigationProps} from '../../components/PageNavigator';
-import {useFriendExpense} from '../../hooks/useFriendExpense';
+import {useFriendExpenseList} from '../../hooks/useFriendExpense';
 import {FriendCard} from './friendCard';
 
 interface IIndexProps extends INavigationProps {}
 
 const FriendScreen = ({navigation}: IIndexProps): JSX.Element => {
-  const {friendExpenses} = useFriendExpense();
+  const {friendExpenses} = useFriendExpenseList();
+
+  const navigateToFriendExpense = (friendExpense: IFriendExpenseListItem) => {
+    navigation.navigate('FriendExpenses', {
+      friendExpense,
+    });
+  };
 
   return (
     <View style={style.container}>
@@ -25,7 +32,11 @@ const FriendScreen = ({navigation}: IIndexProps): JSX.Element => {
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         <View style={style.cards}>
           {friendExpenses.map(friendExpense => (
-            <FriendCard key={friendExpense.id} data={friendExpense} />
+            <FriendCard
+              key={friendExpense.id}
+              data={friendExpense}
+              navigateToFriendExpense={navigateToFriendExpense}
+            />
           ))}
         </View>
       </ScrollView>

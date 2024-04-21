@@ -1,11 +1,14 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button} from 'react-native-paper';
+import {IFriendExpenseListItem} from '../api/friendExpense';
 import {INavigationProps} from './PageNavigator';
 
-interface IAddExpenseProps extends INavigationProps {}
+interface IAddExpenseProps extends INavigationProps {
+  friend?: IFriendExpenseListItem;
+}
 
-const AddExpense = ({navigation}: IAddExpenseProps): JSX.Element => {
+const AddExpense = ({navigation, friend}: IAddExpenseProps): JSX.Element => {
   return (
     <View style={style.container}>
       <Button
@@ -13,7 +16,11 @@ const AddExpense = ({navigation}: IAddExpenseProps): JSX.Element => {
         mode="contained"
         style={style.button}
         dark
-        onPress={() => navigation.navigate('Expense')}>
+        onPress={() =>
+          navigation.navigate('Expense', {
+            friend,
+          })
+        }>
         Add Expense
       </Button>
     </View>

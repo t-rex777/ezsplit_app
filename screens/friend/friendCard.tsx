@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Card, Text} from 'react-native-paper';
-import {IFriendExpense} from '../../api/friendExpense';
+import {IFriendExpenseListItem} from '../../api/friendExpense';
 import Avatar from '../../components/Avatar';
 import {theme} from '../../theme';
 import {getAvatarFallbackValue} from '../../utils/fallback';
@@ -13,7 +13,8 @@ export interface IGroupExpense {
 }
 
 interface IFriendCardProps {
-  data: IFriendExpense;
+  data: IFriendExpenseListItem;
+  navigateToFriendExpense: (friend: IFriendExpenseListItem) => void;
 }
 
 const RightContent = ({name, group}: {name: string; group: IGroupExpense}) => (
@@ -28,10 +29,13 @@ const RightContent = ({name, group}: {name: string; group: IGroupExpense}) => (
 );
 
 const FriendCard = ({
-  data: {imageUrl, isLender, name, totalAmount, currency},
+  data,
+  navigateToFriendExpense,
 }: IFriendCardProps): JSX.Element => {
+  const {imageUrl, isLender, name, totalAmount, currency} = data;
+
   return (
-    <Card style={style.container}>
+    <Card style={style.container} onPress={() => navigateToFriendExpense(data)}>
       <Card.Content style={style.cardContent}>
         <View style={style.cardContentHeader}>
           <View

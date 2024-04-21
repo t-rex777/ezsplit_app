@@ -1,28 +1,14 @@
 import React from 'react';
-import {
-  Control,
-  FieldValues,
-  RegisterOptions,
-  useController,
-} from 'react-hook-form';
+import {useController} from 'react-hook-form';
 import {KeyboardTypeOptions, StyleProp, View, ViewStyle} from 'react-native';
 import {Text, TextInput} from 'react-native-paper';
 import {IconSource} from 'react-native-paper/lib/typescript/components/Icon';
 import {theme} from '../theme';
+import {IInputProps} from './helpers/input';
 
-interface ITextInputProps {
-  name: string;
+interface ITextInputProps extends IInputProps<string> {
   style?: StyleProp<ViewStyle>;
-  error?: string;
-  placeholder: string;
   mode?: 'flat' | 'outlined';
-  control: Control<any, any>;
-  rules?:
-    | Omit<
-        RegisterOptions<FieldValues, string>,
-        'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'
-      >
-    | undefined;
   keyboardType?: KeyboardTypeOptions;
   multiline?: boolean;
   secureTextEntry?: boolean;
@@ -36,6 +22,7 @@ function EZTextInput({
   control,
   placeholder,
   rules,
+  label,
   mode = 'outlined',
   keyboardType,
   multiline,
@@ -51,7 +38,9 @@ function EZTextInput({
   });
 
   return (
-    <View>
+    <View style={{display: 'flex', flexDirection: 'column'}}>
+      <Text variant="titleMedium">{label}</Text>
+
       <TextInput
         value={field.value}
         onChangeText={field.onChange}

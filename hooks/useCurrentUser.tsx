@@ -13,7 +13,7 @@ import {useAuth} from '../components/PageNavigator';
 import {ISignInPageForm} from '../screens/signin';
 
 export interface IUser {
-  id: number;
+  id: string;
   name: string;
   email: string;
   password: string;

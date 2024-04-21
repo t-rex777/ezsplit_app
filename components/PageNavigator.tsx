@@ -11,6 +11,7 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {useEffectOnce} from 'react-use';
 import {AuthModel} from '../api/auth';
 import {ExpensePage} from '../screens/expense';
+import {FriendExpenses} from '../screens/friendExpenses';
 import {HomeScreen} from '../screens/home';
 import {SignInPage} from '../screens/signin';
 
@@ -37,15 +38,14 @@ const PageNavigator = (): JSX.Element => {
       queries: {
         refetchOnWindowFocus: true,
         staleTime: undefined,
-        retry: false,
+        retry: true,
       },
     },
   });
 
-  const [isAuthenticated, setIsAuthenticated] = React.useState(true);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
   useEffectOnce(() => {
-    // wrap this into useAuth
     (async () => {
       const cred = (await Keychain.getGenericPassword()) as any;
 
@@ -90,6 +90,12 @@ const PageNavigator = (): JSX.Element => {
                 <Stack.Screen
                   name="Expense"
                   component={ExpensePage}
+                  options={{headerShown: false}}
+                />
+
+                <Stack.Screen
+                  name="FriendExpenses"
+                  component={FriendExpenses as any}
                   options={{headerShown: false}}
                 />
               </>
