@@ -49,7 +49,7 @@ const Row = ({option, control, name, index, onChange}: IRow): JSX.Element => {
         style={{width: 120, height: 40}}
         mode={'outlined'}
         keyboardType={'decimal-pad'}
-        left={<TextInput.Icon icon="eye" />}
+        placeholder="0.00"
       />
     </View>
   );

@@ -57,6 +57,7 @@ function EZTextInput({
             <TextInput.Icon onPress={onRightIconPress} icon={RightIcon} />
           ) : undefined
         }
+        style={{paddingTop: multiline ? 12 : 0}}
       />
 
       {error.length > 0 && (

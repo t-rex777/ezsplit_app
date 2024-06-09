@@ -1,5 +1,6 @@
 import {AxiosResponse} from 'axios';
 import {Client} from './client';
+import {TPaginatedResource} from './types';
 
 interface IExpense {
   user_id: string;
@@ -76,9 +77,10 @@ export class FriendExpense extends Client {
 
   async findFriendExpenses(
     friendId: string,
-  ): Promise<AxiosResponse<{data: IFriendExpenses[]}>> {
+    queryParams?: Record<string, any>,
+  ): Promise<AxiosResponse<TPaginatedResource<IFriendExpenses>>> {
     try {
-      return await this.find('friend', friendId);
+      return await this.find('friend', friendId, queryParams);
     } catch (error) {
       console.error(error);
 

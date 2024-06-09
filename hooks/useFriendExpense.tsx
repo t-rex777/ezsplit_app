@@ -1,5 +1,6 @@
 import {
   UseMutationResult,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
@@ -25,12 +26,12 @@ interface IFriendExpensesContext {
   isFetching: boolean;
 }
 
-export const friendExpenseKey = (id?: string) => {
+export const friendExpenseKey = (id?: string, term = '') => {
   if (id !== undefined) {
-    return ['friendExpenses', id, userQueryKey()];
+    return ['friendExpenses', id, userQueryKey(), term];
   }
 
-  return ['friendExpenses', userQueryKey()];
+  return ['friendExpenses', userQueryKey(), term];
 };
 
 export const useFriendExpenseList = (
@@ -75,21 +76,32 @@ export const useFriendExpenseList = (
   };
 };
 
-export const useFriendExpenses = (friendId: string): IFriendExpensesContext => {
+export const useFriendExpenses = (
+  friendId: string,
+  term = '',
+): IFriendExpensesContext => {
   const FriendModel = useModel(FriendExpense);
 
-  // TODO: useInfinite
-  const {data, isFetching} = useQuery({
-    queryKey: friendExpenseKey(friendId),
-    queryFn: async () => {
-      const response = await (await FriendModel).findFriendExpenses(friendId);
+  const {data, isFetching} = useInfiniteQuery({
+    queryKey: friendExpenseKey(friendId, term),
+    initialPageParam: 1,
+    queryFn: async ({pageParam = 1}) => {
+      const response = await (
+        await FriendModel
+      ).findFriendExpenses(friendId, {
+        page: pageParam,
+        page_size: 20,
+        term,
+      });
+
       if (response.status !== 200) {
         throw new Error('could not fetch friend expenses');
       }
 
-      return response.data.data;
+      return response.data;
     },
+    getNextPageParam: ({meta}) => meta?.pagination?.next_page,
   });
 
-  return {friendExpenses: data ?? [], isFetching};
+  return {friendExpenses: data?.pages[0].data ?? [], isFetching};
 };

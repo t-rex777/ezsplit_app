@@ -24,6 +24,8 @@ const EZSelect = ({
 }: IEZSelectProps): JSX.Element => {
   const [open, setOpen] = useState(false);
 
+  const [dropdownValue, setDropdownValue] = useState(null);
+
   const handleChange = useCallback(
     (option: ItemType<string>) => {
       if (option.label && option.value) {
@@ -42,23 +44,28 @@ const EZSelect = ({
 
       <Controller
         name={name}
-        defaultValue={null}
         control={control}
         rules={rules}
         render={({field}) => {
+          setDropdownValue(field.value.value);
+
+          const onSelectItem = (d: any) => {
+            handleChange(d);
+            return field.onChange(d);
+          };
+
           return (
             <DropDownPicker
               open={open}
               items={options}
               placeholder={placeholder}
-              value={field.value}
+              value={dropdownValue}
               searchable={searchable}
               closeAfterSelecting={true}
               closeOnBackPressed={true}
               setOpen={setOpen}
-              // TODO: not wokring
-              setValue={field.onChange}
-              onSelectItem={handleChange}
+              setValue={setDropdownValue}
+              onSelectItem={onSelectItem}
             />
           );
         }}

@@ -7,7 +7,7 @@ import {
   useFieldArray,
   useForm,
 } from 'react-hook-form';
-import {ScrollView, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Appbar, Button, Chip, IconButton, Text} from 'react-native-paper';
 import {DatePickerModal} from 'react-native-paper-dates';
 import {IFriendExpenseListItem} from '../../api/friendExpense';
@@ -48,7 +48,7 @@ interface IUserOption {
 const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
   const [openCalendar, setOpenCalendar] = React.useState(false);
 
-  const {create} = useFriendExpenseList();
+  const {create} = useFriendExpenseList(navigation);
   const {categories} = useCategories();
   const {user} = useCurrentUser(navigation);
 
@@ -57,7 +57,7 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
   const form = useForm<IExpenseForm>({
     mode: 'onChange',
     defaultValues: {
-      amount: '0.00',
+      amount: '',
       categoryId: categories[0]?.id,
       description: '',
       notes: '',
@@ -68,7 +68,7 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
       },
       expenses: [
         {
-          amount: '0.00',
+          amount: '',
           disabled: false,
           image: user.image,
           selected: false,
@@ -76,7 +76,7 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
           userName: user.name,
         },
         {
-          amount: '0.00',
+          amount: '',
           disabled: false,
           image: friend.imageUrl,
           selected: false,
@@ -125,16 +125,15 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
       date,
       description,
       expenses,
-      lender,
       notes,
+      lender,
     }) => {
-      const expenseArray = expenses.map((e, i) => ({
+      const expenseArray = expenses.map(e => ({
         user_id: e.value,
         amount: e.amount,
-        is_lender: i === 0,
+        is_lender: Number(e.value) === Number(lender.value),
       }));
 
-      // TODO: not working
       await create.mutateAsync({
         categoryId,
         currency: 'INR',
@@ -145,7 +144,7 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
         totalAmount: amount,
       });
     },
-    [create, user.id],
+    [create],
   );
 
   const handleCategory = React.useCallback(
@@ -174,143 +173,138 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
 
   return (
     <View>
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <FormProvider {...form}>
+      <FormProvider {...form}>
+        <View>
+          <Appbar.Header>
+            <Appbar.BackAction onPress={() => navigation.goBack()} />
+            <Appbar.Content title="Add Expense" />
+            <Appbar.Action icon="check" onPress={handleSubmit(submitExpense)} />
+          </Appbar.Header>
+        </View>
+
+        <View style={style.container}>
           <View>
-            <Appbar.Header>
-              <Appbar.BackAction onPress={() => navigation.goBack()} />
-              <Appbar.Content title="Add Expense" />
-              <Appbar.Action
-                icon="check"
-                onPress={handleSubmit(submitExpense)}
-              />
-            </Appbar.Header>
+            <EZTextInput
+              label="Description"
+              rules={{
+                validate: (v: string) =>
+                  v.length > 0 ? true : 'Required field',
+              }}
+              name="description"
+              control={control}
+              error={errors.description?.message}
+              mode="outlined"
+              placeholder="For eg. Fruits and Vegetables"
+            />
           </View>
 
-          <View style={style.container}>
-            <View>
-              <EZTextInput
-                label="Description"
-                rules={{
-                  validate: (v: string) =>
-                    v.length > 0 ? true : 'Required field',
-                }}
-                name="description"
-                control={control}
-                error={errors.description?.message}
-                mode="outlined"
-                placeholder="For eg. Fruits and Vegetables"
-              />
-            </View>
-
-            <View>
-              <EZTextInput
-                label="Amount"
-                rules={{
-                  validate: (v: string) =>
-                    Number(v) >= 1 ? true : 'should be greater than 0',
-                }}
-                name="amount"
-                control={control}
-                error={errors.amount?.message}
-                mode="outlined"
-                placeholder="0.00"
-                keyboardType="numeric"
-              />
-            </View>
-
-            <View>
-              <Text variant="titleMedium">Category</Text>
-
-              <View style={style.categoryChipContainer}>
-                {categories.map((category, i) => (
-                  <Chip
-                    key={i}
-                    compact
-                    selected={selectedCategory === category.id}
-                    showSelectedOverlay
-                    showSelectedCheck
-                    icon={
-                      selectedCategory !== category.id
-                        ? 'chart-bubble'
-                        : undefined
-                    }
-                    style={style.categoryChip}
-                    onPress={() => handleCategory(category.id)}>
-                    {category.name}
-                  </Chip>
-                ))}
-              </View>
-            </View>
-
-            <View>
-              <EZSelect
-                label="Paid by"
-                name="lender"
-                control={control}
-                options={userOptions}
-              />
-            </View>
-
-            <View>
-              <EZTextInput
-                label="Notes"
-                name="notes"
-                control={control}
-                multiline
-                error={errors.notes?.message}
-                style={style.notes}
-                mode="outlined"
-                placeholder="For eg. 500gm banana, 1L milk..."
-              />
-            </View>
-
-            <View>
-              <Text variant="titleMedium">Date of expense</Text>
-
-              <TouchableOpacity
-                style={style.calendar}
-                onPress={handleOpenCalendar}>
-                <IconButton icon="calendar-month" size={20} />
-
-                <Text variant="bodyMedium">
-                  {dayjs(date).format('DD-MM-YYYY')}
-                </Text>
-
-                <DatePickerModal
-                  locale="en"
-                  mode="single"
-                  visible={openCalendar}
-                  onDismiss={handleCloseCalendar}
-                  date={date}
-                  onChange={onConfirmSingle}
-                  onConfirm={onConfirmSingle}
-                  presentationStyle="fullScreen"
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View>
-              <Text variant="titleMedium">Split between 2 people</Text>
-
-              <SplitExpense
-                name="expenses"
-                control={control}
-                onChange={handleExpenses}
-                options={fields}
-              />
-            </View>
-
-            <Button
-              mode="contained"
-              icon="check"
-              style={style.submitButton}
-              onPress={handleSubmit(submitExpense)}>
-              Add Expense
-            </Button>
+          <View>
+            <EZTextInput
+              label="Amount"
+              rules={{
+                validate: (v: string) =>
+                  Number(v) >= 1 ? true : 'should be greater than 0',
+              }}
+              name="amount"
+              control={control}
+              error={errors.amount?.message}
+              mode="outlined"
+              placeholder="0.00"
+              keyboardType="numeric"
+            />
           </View>
-        </FormProvider>
-      </ScrollView>
+
+          <View>
+            <Text variant="titleMedium">Category</Text>
+
+            <View style={style.categoryChipContainer}>
+              {categories.map((category, i) => (
+                <Chip
+                  key={i}
+                  compact
+                  selected={selectedCategory === category.id}
+                  showSelectedOverlay
+                  showSelectedCheck
+                  icon={
+                    selectedCategory !== category.id
+                      ? 'chart-bubble'
+                      : undefined
+                  }
+                  style={style.categoryChip}
+                  onPress={() => handleCategory(category.id)}>
+                  {category.name}
+                </Chip>
+              ))}
+            </View>
+          </View>
+
+          <View>
+            <EZSelect
+              label="Paid by"
+              name="lender"
+              control={control}
+              options={userOptions}
+            />
+          </View>
+
+          <View>
+            <EZTextInput
+              label="Notes"
+              name="notes"
+              control={control}
+              multiline
+              error={errors.notes?.message}
+              style={style.notes}
+              mode="outlined"
+              placeholder="For eg. 500gm banana, 1L milk..."
+            />
+          </View>
+
+          <View>
+            <Text variant="titleMedium">Date of expense</Text>
+
+            <TouchableOpacity
+              style={style.calendar}
+              onPress={handleOpenCalendar}>
+              <IconButton icon="calendar-month" size={20} />
+
+              <Text variant="bodyMedium">
+                {dayjs(date).format('DD-MM-YYYY')}
+              </Text>
+
+              <DatePickerModal
+                locale="en"
+                mode="single"
+                visible={openCalendar}
+                onDismiss={handleCloseCalendar}
+                date={date}
+                onChange={onConfirmSingle}
+                onConfirm={onConfirmSingle}
+                presentationStyle="fullScreen"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View>
+            <Text variant="titleMedium">Split between 2 people</Text>
+
+            <SplitExpense
+              name="expenses"
+              control={control}
+              onChange={handleExpenses}
+              options={fields}
+            />
+          </View>
+
+          <Button
+            mode="contained"
+            icon="check"
+            style={style.submitButton}
+            onPress={handleSubmit(submitExpense)}>
+            Add Expense
+          </Button>
+        </View>
+      </FormProvider>
     </View>
   );
 };

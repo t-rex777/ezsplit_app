@@ -1,8 +1,8 @@
 import {RouteProp} from '@react-navigation/native';
-import Fuse from 'fuse.js';
 import React, {useCallback, useState} from 'react';
 import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
 import {Appbar, Text, TextInput} from 'react-native-paper';
+import {useDebounce} from 'react-use';
 import {IFriendExpenseListItem} from '../../api/friendExpense';
 import {AddExpense} from '../../components/AddExpense';
 import {INavigationProps} from '../../components/PageNavigator';
@@ -23,38 +23,25 @@ interface IFriendExpensesProps extends INavigationProps {
 const FriendExpenses = ({navigation, route}: IFriendExpensesProps) => {
   const [search, setSearch] = useState('');
 
-  const {friendExpenses, isFetching} = useFriendExpenses(
-    route.params?.friendExpense?.id,
+  const [debouncedValue, setDebouncedValue] = useState('');
+  useDebounce(
+    () => {
+      setSearch(debouncedValue);
+    },
+    500,
+    [debouncedValue],
   );
 
-  const [searchedResults, setSearchResults] = useState(friendExpenses);
+  const {friendExpenses, isFetching} = useFriendExpenses(
+    route.params?.friendExpense?.id,
+    search,
+  );
 
   const {user} = useCurrentUser(navigation);
 
-  const handleSearch = useCallback(
-    (term = '') => {
-      const fuse = new Fuse(friendExpenses, {
-        keys: ['name', 'category', 'totalAmount'],
-      });
-
-      if (term === '') {
-        setSearchResults(() => friendExpenses);
-        return;
-      }
-
-      setSearchResults(() => fuse.search(term).map(({item}) => item));
-    },
-    [friendExpenses],
-  );
-
-  const handleChange = useCallback(
-    (term = '') => {
-      setSearch(term);
-
-      handleSearch(term);
-    },
-    [handleSearch],
-  );
+  const handleChange = useCallback((term = '') => {
+    setDebouncedValue(term);
+  }, []);
 
   if (isFetching) {
     return (
@@ -78,19 +65,20 @@ const FriendExpenses = ({navigation, route}: IFriendExpensesProps) => {
             <Appbar.Content title={route.params.friendExpense.name} />
 
             <TextInput
-              value={search}
+              value={debouncedValue}
               onChangeText={handleChange}
               outlineColor={theme.colors.primary}
               mode="flat"
               placeholder="search expenses"
               left={<TextInput.Icon icon="magnify" />}
               style={{backgroundColor: 'transparent', flexGrow: 1}}
+              autoFocus
             />
           </Appbar.Header>
         </View>
 
         <ScrollView contentInsetAdjustmentBehavior="automatic">
-          {searchedResults.map(
+          {friendExpenses.map(
             ({category, currency, createdAt, name, users, id, totalAmount}) => {
               const friend = users.find(u => Number(u.id) !== Number(user.id));
 

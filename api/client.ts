@@ -48,8 +48,13 @@ export class Client {
     return await this.instance('get', resource);
   }
 
-  async find(resource: string, resourceId: string) {
-    return await this.instance('get', `${resource}/${resourceId}`);
+  async find(resource: string, resourceId: string, options = {}) {
+    const queryParams = new URLSearchParams(options);
+
+    return await this.instance(
+      'get',
+      `${resource}/${resourceId}?${queryParams.toString()}`,
+    );
   }
 
   async post(resource: string, data = {}) {
