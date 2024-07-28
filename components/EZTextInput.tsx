@@ -29,6 +29,7 @@ function EZTextInput({
   secureTextEntry = false,
   rightIcon: RightIcon,
   onRightIconPress,
+  onChange,
 }: ITextInputProps): JSX.Element {
   const {field} = useController({
     control,
@@ -43,7 +44,9 @@ function EZTextInput({
 
       <TextInput
         value={field.value}
-        onChangeText={field.onChange}
+        onChangeText={args => {
+          field.onChange(args);
+        }}
         outlineColor={
           error.length > 0 ? theme.colors.error : theme.colors.primary
         }
@@ -52,6 +55,7 @@ function EZTextInput({
         keyboardType={keyboardType}
         multiline={multiline}
         secureTextEntry={secureTextEntry}
+        onEndEditing={() => onChange?.(field.value)}
         right={
           RightIcon ? (
             <TextInput.Icon onPress={onRightIconPress} icon={RightIcon} />

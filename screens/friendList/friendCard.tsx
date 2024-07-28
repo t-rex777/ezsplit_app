@@ -17,16 +17,16 @@ interface IFriendCardProps {
   navigateToFriendExpense: (friend: IFriendExpenseListItem) => void;
 }
 
-const RightContent = ({name, group}: {name: string; group: IGroupExpense}) => (
-  <View>
-    <Text variant="bodyMedium" style={style.card}>
-      {group.money > 0
-        ? `${name} owes you $${group.money}`
-        : `${name} is owed $${Math.abs(group.money)}`}{' '}
-      for {group.name}
-    </Text>
-  </View>
-);
+// const RightContent = ({name, group}: {name: string; group: IGroupExpense}) => (
+//   <View>
+//     <Text variant="bodyMedium" style={style.card}>
+//       {group.money > 0
+//         ? `${name} owes you $${group.money}`
+//         : `${name} is owed $${Math.abs(group.money)}`}{' '}
+//       for {group.name}
+//     </Text>
+//   </View>
+// );
 
 const FriendCard = ({
   data,

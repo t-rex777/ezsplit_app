@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import React from 'react';
-import {Image, StyleSheet, View} from 'react-native';
+import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Text} from 'react-native-paper';
 import EZAvatar from '../../components/Avatar';
 import {getAvatarFallbackValue} from '../../utils/fallback';
@@ -16,6 +16,7 @@ interface IExpenseCardProps {
   expenseName: string;
   friendName: string;
   currency: string;
+  onPress: () => void;
 }
 
 const ExpenseCard = ({
@@ -28,60 +29,71 @@ const ExpenseCard = ({
   expenseName,
   friendName,
   categoryName,
+  onPress,
 }: IExpenseCardProps): JSX.Element => {
   return (
-    <View style={styles.container}>
-      <View style={styles.leftHalf}>
-        <View style={styles.date}>
-          <Text variant="labelLarge" style={{textAlign: 'center'}}>
-            {dayjs(date).format('MMM')}
-          </Text>
-
-          <Text variant="labelLarge" style={{textAlign: 'center'}}>
-            {dayjs(date).format('DD')}
-          </Text>
-        </View>
-
-        <View>
-          {/* manage this */}
-          {categoryImage !== null && categoryImage.length !== 0 ? (
-            <Image src={categoryImage} height={32} width={32} />
-          ) : (
-            <EZAvatar
-              label={getAvatarFallbackValue(categoryName.toUpperCase())}
-              size={32}
-            />
-          )}
-        </View>
-
-        <View>
-          <View style={styles.main}>
-            <Text variant="titleMedium">
-              {capitalizeFirstLetter(expenseName)}
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.container}>
+        <View style={styles.leftHalf}>
+          <View style={styles.date}>
+            <Text variant="labelLarge" style={{textAlign: 'center'}}>
+              {dayjs(date).format('MMM')}
             </Text>
 
-            <Text variant="bodySmall">
-              {isFriendLender ? `${friendName} paid` : 'You paid'} {currency}{' '}
-              {totalAmount}
+            <Text variant="labelLarge" style={{textAlign: 'center'}}>
+              {dayjs(date).format('DD')}
             </Text>
           </View>
+
+          <View>
+            {/* manage this */}
+            {categoryImage !== null && categoryImage.length !== 0 ? (
+              <Image src={categoryImage} height={32} width={32} />
+            ) : (
+              <EZAvatar
+                label={getAvatarFallbackValue(categoryName.toUpperCase())}
+                size={32}
+              />
+            )}
+          </View>
+
+          <View>
+            <View style={styles.main}>
+              <Text variant="titleMedium">
+                {capitalizeFirstLetter(expenseName)}
+              </Text>
+
+              <Text variant="bodySmall">
+                {isFriendLender ? `${friendName} paid` : 'You paid'} {currency}{' '}
+                {totalAmount}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <View>
+          <Text
+            variant="labelMedium"
+            style={{
+              textAlign: 'right',
+              color: isFriendLender ? 'red' : 'green',
+            }}>
+            {isFriendLender ? 'You borrowed' : 'You lent'}
+          </Text>
+
+          <Text
+            variant="labelMedium"
+            style={{
+              textAlign: 'right',
+              color: isFriendLender ? 'red' : 'green',
+            }}>
+            {isFriendLender
+              ? `${currency} ${Number(totalAmount) - Number(friendAmount)}`
+              : `${currency} ${Number(friendAmount)}`}
+          </Text>
         </View>
       </View>
-
-      <View>
-        <Text
-          variant="labelMedium"
-          style={{textAlign: 'right', color: isFriendLender ? 'red' : 'green'}}>
-          {isFriendLender ? 'You borrowed' : 'You lent'}
-        </Text>
-
-        <Text
-          variant="labelMedium"
-          style={{textAlign: 'right', color: isFriendLender ? 'red' : 'green'}}>
-          {currency} {Number(totalAmount) - Number(friendAmount)}
-        </Text>
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

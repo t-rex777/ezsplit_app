@@ -27,7 +27,7 @@ const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
   } = useForm<ISignInPageForm>({
     mode: 'onChange',
     defaultValues: {
-      email: 'dev@dev.com',
+      email: 'tester@test.com',
       password: 'password123',
     },
   });

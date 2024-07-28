@@ -1,11 +1,15 @@
 import {RouteProp} from '@react-navigation/native';
+import {useQueryClient} from '@tanstack/react-query';
 import React, {useCallback, useState} from 'react';
 import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
 import {Appbar, Text, TextInput} from 'react-native-paper';
-import {useDebounce} from 'react-use';
-import {IFriendExpenseListItem} from '../../api/friendExpense';
+import {useDebounce, useEffectOnce} from 'react-use';
+import {Category} from '../../api/category';
+import {IFriendExpenseListItem, IFriendExpenses} from '../../api/friendExpense';
 import {AddExpense} from '../../components/AddExpense';
 import {INavigationProps} from '../../components/PageNavigator';
+import {useModel} from '../../hooks/helper';
+import {userCategoryKey} from '../../hooks/useCategory';
 import {useCurrentUser} from '../../hooks/useCurrentUser';
 import {useFriendExpenses} from '../../hooks/useFriendExpense';
 import {theme} from '../../theme';
@@ -23,6 +27,9 @@ interface IFriendExpensesProps extends INavigationProps {
 const FriendExpenses = ({navigation, route}: IFriendExpensesProps) => {
   const [search, setSearch] = useState('');
 
+  const queryClient = useQueryClient();
+  const CategoryModel = useModel(Category);
+
   const [debouncedValue, setDebouncedValue] = useState('');
   useDebounce(
     () => {
@@ -33,6 +40,7 @@ const FriendExpenses = ({navigation, route}: IFriendExpensesProps) => {
   );
 
   const {friendExpenses, isFetching} = useFriendExpenses(
+    navigation,
     route.params?.friendExpense?.id,
     search,
   );
@@ -42,6 +50,31 @@ const FriendExpenses = ({navigation, route}: IFriendExpensesProps) => {
   const handleChange = useCallback((term = '') => {
     setDebouncedValue(term);
   }, []);
+
+  useEffectOnce(() => {
+    /**
+     * prefetching categories so that the moment
+     * we open expense page, the categories will be loaded
+     */
+    queryClient.prefetchQuery({
+      queryKey: userCategoryKey(),
+      queryFn: async () => {
+        const response = await (await CategoryModel).all();
+
+        return response.data.data;
+      },
+    });
+  });
+
+  const handleEditExpense = useCallback(
+    (expense: IFriendExpenses): void => {
+      navigation.navigate('Expense', {
+        expense,
+        friend: expense.users.find(u => Number(u.id) !== Number(user.id)),
+      });
+    },
+    [navigation, user.id],
+  );
 
   if (isFetching) {
     return (
@@ -72,36 +105,45 @@ const FriendExpenses = ({navigation, route}: IFriendExpensesProps) => {
               placeholder="search expenses"
               left={<TextInput.Icon icon="magnify" />}
               style={{backgroundColor: 'transparent', flexGrow: 1}}
-              autoFocus
+              // autoFocus
             />
           </Appbar.Header>
         </View>
 
         <ScrollView contentInsetAdjustmentBehavior="automatic">
-          {friendExpenses.map(
-            ({category, currency, createdAt, name, users, id, totalAmount}) => {
-              const friend = users.find(u => Number(u.id) !== Number(user.id));
+          {friendExpenses.map(expense => {
+            const {
+              category,
+              currency,
+              createdAt,
+              name,
+              users,
+              id,
+              totalAmount,
+            } = expense;
 
-              if (!friend) {
-                return null;
-              }
+            const friend = users.find(u => Number(u.id) !== Number(user.id));
 
-              return (
-                <ExpenseCard
-                  key={id}
-                  date={createdAt}
-                  expenseName={name}
-                  currency={currency}
-                  friendName={friend.name}
-                  categoryName={category.name}
-                  totalAmount={totalAmount}
-                  friendAmount={friend.amount}
-                  categoryImage={category.image}
-                  isFriendLender={friend.isLender}
-                />
-              );
-            },
-          )}
+            if (!friend) {
+              return null;
+            }
+
+            return (
+              <ExpenseCard
+                key={id}
+                date={createdAt}
+                expenseName={name}
+                currency={currency}
+                friendName={friend.name}
+                categoryName={category.name}
+                totalAmount={totalAmount}
+                friendAmount={friend.amount}
+                categoryImage={category.image}
+                isFriendLender={friend.isLender}
+                onPress={() => handleEditExpense(expense)}
+              />
+            );
+          })}
         </ScrollView>
       </View>
       <View>

@@ -65,6 +65,10 @@ export class Client {
     return await this.instance('put', `${resource}/${resourceId}`, data);
   }
 
+  async patch(resource: string, resourceId: string, data = {}) {
+    return await this.instance('patch', `${resource}/${resourceId}`, data);
+  }
+
   async delete(resource: string, resourceId: string) {
     return await this.instance('delete', `${resource}/${resourceId}`);
   }

@@ -88,6 +88,19 @@ export class FriendExpense extends Client {
     }
   }
 
+  async findExpense(
+    expenseId: string,
+    queryParams?: Record<string, any>,
+  ): Promise<AxiosResponse<{data: IFriendExpenses}>> {
+    try {
+      return await this.find('', expenseId, queryParams);
+    } catch (error) {
+      console.error(error);
+
+      throw new Error(`Could not fetch expense id ${expenseId} expenses`);
+    }
+  }
+
   async create(data: ICreateFriendExpenseParams): Promise<AxiosResponse<any>> {
     try {
       return await this.post('create', data);
@@ -103,7 +116,7 @@ export class FriendExpense extends Client {
     ...data
   }: IUpdateFriendExpenseParams): Promise<AxiosResponse<any>> {
     try {
-      return await this.put('update', id, data);
+      return await this.patch('update', id, data);
     } catch (error) {
       console.error(error);
 

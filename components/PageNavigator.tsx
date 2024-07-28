@@ -10,9 +10,10 @@ import * as Keychain from 'react-native-keychain';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {useEffectOnce} from 'react-use';
 import {AuthModel} from '../api/auth';
-import {ExpensePage} from '../screens/expense';
+import {ExpensePage} from '../screens/addExpense';
 import {FriendExpenses} from '../screens/friendExpenses';
 import {HomeScreen} from '../screens/home';
+import {LoadingPage} from '../screens/loadingPage';
 import {SignInPage} from '../screens/signin';
 
 export interface INavigationProps {
@@ -44,13 +45,12 @@ const PageNavigator = (): JSX.Element => {
   });
 
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isLoading, setLoading] = React.useState(false);
 
   useEffectOnce(() => {
     (async () => {
+      setLoading(true);
       const cred = (await Keychain.getGenericPassword()) as any;
-
-      // eslint-disable-next-line no-console
-      console.log({keychainCred: cred});
 
       if (cred !== false) {
         const token = JSON.parse(cred.password).__rtoken;
@@ -71,6 +71,8 @@ const PageNavigator = (): JSX.Element => {
 
         setIsAuthenticated(true);
       }
+
+      setLoading(false);
     })();
   });
 
@@ -79,32 +81,42 @@ const PageNavigator = (): JSX.Element => {
       <AuthContext.Provider value={{isAuthenticated, setIsAuthenticated}}>
         <NavigationContainer>
           <Stack.Navigator>
-            {isAuthenticated ? (
-              <>
-                <Stack.Screen
-                  name="Home"
-                  component={HomeScreen}
-                  options={{headerShown: false}}
-                />
-
-                <Stack.Screen
-                  name="Expense"
-                  component={ExpensePage}
-                  options={{headerShown: false}}
-                />
-
-                <Stack.Screen
-                  name="FriendExpenses"
-                  component={FriendExpenses as any}
-                  options={{headerShown: false}}
-                />
-              </>
-            ) : (
+            {isLoading ? (
               <Stack.Screen
-                name="SignIn"
-                component={SignInPage}
+                name="Loading"
+                component={LoadingPage}
                 options={{headerShown: false}}
               />
+            ) : (
+              <>
+                {isAuthenticated ? (
+                  <>
+                    <Stack.Screen
+                      name="Home"
+                      component={HomeScreen}
+                      options={{headerShown: false}}
+                    />
+
+                    <Stack.Screen
+                      name="Expense"
+                      component={ExpensePage as any}
+                      options={{headerShown: false}}
+                    />
+
+                    <Stack.Screen
+                      name="FriendExpenses"
+                      component={FriendExpenses as any}
+                      options={{headerShown: false}}
+                    />
+                  </>
+                ) : (
+                  <Stack.Screen
+                    name="SignIn"
+                    component={SignInPage}
+                    options={{headerShown: false}}
+                  />
+                )}
+              </>
             )}
           </Stack.Navigator>
         </NavigationContainer>

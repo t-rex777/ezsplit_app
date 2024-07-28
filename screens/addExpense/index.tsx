@@ -1,16 +1,15 @@
 import {RouteProp} from '@react-navigation/native';
-import dayjs from 'dayjs';
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {
   FormProvider,
   SubmitHandler,
   useFieldArray,
   useForm,
 } from 'react-hook-form';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Appbar, Button, Chip, IconButton, Text} from 'react-native-paper';
-import {DatePickerModal} from 'react-native-paper-dates';
-import {IFriendExpenseListItem} from '../../api/friendExpense';
+import {StyleSheet, View} from 'react-native';
+import {Appbar, Button, Chip, Text} from 'react-native-paper';
+import {useEffectOnce} from 'react-use';
+import {IFriendExpenseListItem, IFriendExpenses} from '../../api/friendExpense';
 import {EZSelect} from '../../components/EZSelect';
 import {EZTextInput} from '../../components/EZTextInput';
 import {INavigationProps} from '../../components/PageNavigator';
@@ -18,13 +17,13 @@ import {SplitExpense} from '../../components/SplitExpense';
 import {IExpenseOption, IOption} from '../../components/helpers/input';
 import {useCategories} from '../../hooks/useCategory';
 import {useCurrentUser} from '../../hooks/useCurrentUser';
-import {useFriendExpenseList} from '../../hooks/useFriendExpense';
+import {useFriendExpenses} from '../../hooks/useFriendExpense';
 import {theme} from '../../theme';
 
 interface IExpensePageProps extends INavigationProps {
   route: RouteProp<
     {
-      ExpensePage: {friend: IFriendExpenseListItem};
+      ExpensePage: {friend: IFriendExpenseListItem; expense?: IFriendExpenses};
     },
     'ExpensePage'
   >;
@@ -46,19 +45,22 @@ interface IUserOption {
 }
 
 const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
-  const [openCalendar, setOpenCalendar] = React.useState(false);
-
-  const {create} = useFriendExpenseList(navigation);
   const {categories} = useCategories();
+
   const {user} = useCurrentUser(navigation);
 
-  const {friend} = route.params;
+  const {friend, expense} = route.params;
 
-  const form = useForm<IExpenseForm>({
-    mode: 'onChange',
-    defaultValues: {
+  const {
+    create,
+    isFetching,
+    update: updateExpense,
+  } = useFriendExpenses(navigation, friend?.id);
+
+  const defaultValue = useMemo<IExpenseForm>(() => {
+    return {
       amount: '',
-      categoryId: categories[0]?.id,
+      categoryId: categories[0].id,
       description: '',
       notes: '',
       date: new Date(),
@@ -84,7 +86,53 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
           userName: friend.name,
         },
       ],
-    },
+    };
+  }, [
+    categories,
+    friend.id,
+    friend.imageUrl,
+    friend.name,
+    user.id,
+    user.image,
+    user.name,
+  ]);
+
+  const defaultExpense = useMemo<IExpenseForm>(() => {
+    if (expense === undefined) {
+      return defaultValue;
+    }
+
+    const lender = expense.users.find(u => u.isLender);
+
+    if (lender === undefined) {
+      throw new Error('Lender not found');
+    }
+
+    return {
+      amount: String(expense.totalAmount),
+      categoryId: String(expense.category.id),
+
+      description: expense.name,
+      notes: expense.description,
+      date: new Date(),
+      lender: {
+        label: lender.name,
+        value: String(lender.id),
+      },
+      expenses: expense.users.map(u => ({
+        amount: u.amount,
+        disabled: false,
+        image: u.image,
+        selected: false,
+        value: String(u.id),
+        userName: u.name,
+      })),
+    };
+  }, [defaultValue, expense]);
+
+  const form = useForm<IExpenseForm>({
+    mode: 'onChange',
+    defaultValues: expense === undefined ? defaultValue : defaultExpense,
   });
 
   const {
@@ -100,41 +148,69 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
     control,
   });
 
-  const [selectedCategory, date] = watch(['categoryId', 'date']);
+  const [selectedCategory, _date] = watch(['categoryId', 'date']);
 
-  const handleCloseCalendar = React.useCallback(() => {
-    setOpenCalendar(false);
-  }, [setOpenCalendar]);
+  // const handleCloseCalendar = React.useCallback(() => {
+  //   setOpenCalendar(false);
+  // }, [setOpenCalendar]);
 
-  const handleOpenCalendar = React.useCallback(() => {
-    setOpenCalendar(true);
-  }, []);
+  // const handleOpenCalendar = React.useCallback(() => {
+  //   setOpenCalendar(true);
+  // }, []);
 
-  const onConfirmSingle = React.useCallback(
-    (params: any) => {
-      setOpenCalendar(false);
-      setValue('date', params.date);
-    },
-    [setValue],
-  );
+  // const onConfirmSingle = React.useCallback(
+  //   (params: any) => {
+  //     setOpenCalendar(false);
+  //     setValue('date', params.date);
+  //   },
+  //   [setValue],
+  // );
 
   const submitExpense: SubmitHandler<IExpenseForm> = React.useCallback(
     async ({
       amount,
       categoryId,
-      date,
+      date: _submittingDate,
       description,
       expenses,
       notes,
       lender,
     }) => {
+      const totalUserAmounts = expenses.reduce(
+        (acc, e) => acc + Number(e.amount),
+        0,
+      );
+
+      if (totalUserAmounts !== Number(amount)) {
+        form.setError('amount', {
+          message: 'Sum of individual amounts should be equal to total amount',
+        });
+
+        form.setFocus('amount');
+
+        return;
+      }
+
       const expenseArray = expenses.map(e => ({
         user_id: e.value,
         amount: e.amount,
         is_lender: Number(e.value) === Number(lender.value),
       }));
 
-      await create.mutateAsync({
+      if (expense === undefined) {
+        return await create.mutateAsync({
+          categoryId,
+          currency: 'INR',
+          description: notes,
+          expenses: expenseArray,
+          image: '',
+          name: description,
+          totalAmount: amount,
+        });
+      }
+
+      return updateExpense.mutateAsync({
+        expenseId: String(expense.id),
         categoryId,
         currency: 'INR',
         description: notes,
@@ -144,7 +220,7 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
         totalAmount: amount,
       });
     },
-    [create],
+    [create, expense, form, updateExpense],
   );
 
   const handleCategory = React.useCallback(
@@ -156,10 +232,10 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
 
   const userOptions = React.useMemo<IUserOption[]>(() => {
     return [
-      {label: friend.name, value: friend.id},
+      {label: friend.name, value: friend.id.toString()},
       {
         label: `${user.name} (You)`,
-        value: user.id,
+        value: user.id.toString(),
       },
     ];
   }, [friend.id, friend.name, user.id, user.name]);
@@ -170,6 +246,25 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
     },
     [update],
   );
+
+  const handleAmountChange = useCallback(
+    (amount: string) => {
+      fields.forEach((field, index) => {
+        handleExpenses(
+          {
+            ...field,
+            amount: (Number(amount) / fields.length).toString(),
+          },
+          index,
+        );
+      });
+    },
+    [fields, handleExpenses],
+  );
+
+  useEffectOnce(() => {
+    handleCategory(String(defaultValue.categoryId));
+  });
 
   return (
     <View>
@@ -202,8 +297,13 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
             <EZTextInput
               label="Amount"
               rules={{
-                validate: (v: string) =>
-                  Number(v) >= 1 ? true : 'should be greater than 0',
+                validate: (v: string) => {
+                  if (Number(v) < 1) {
+                    return 'should be greater than 0';
+                  }
+
+                  return true;
+                },
               }}
               name="amount"
               control={control}
@@ -211,6 +311,7 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
               mode="outlined"
               placeholder="0.00"
               keyboardType="numeric"
+              onChange={handleAmountChange}
             />
           </View>
 
@@ -222,11 +323,11 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
                 <Chip
                   key={i}
                   compact
-                  selected={selectedCategory === category.id}
+                  selected={Number(selectedCategory) === Number(category.id)}
                   showSelectedOverlay
                   showSelectedCheck
                   icon={
-                    selectedCategory !== category.id
+                    Number(selectedCategory) !== Number(category.id)
                       ? 'chart-bubble'
                       : undefined
                   }
@@ -260,7 +361,8 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
             />
           </View>
 
-          <View>
+          {/* TODO: Add date */}
+          {/* <View>
             <Text variant="titleMedium">Date of expense</Text>
 
             <TouchableOpacity
@@ -283,21 +385,17 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
                 presentationStyle="fullScreen"
               />
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           <View>
             <Text variant="titleMedium">Split between 2 people</Text>
 
-            <SplitExpense
-              name="expenses"
-              control={control}
-              onChange={handleExpenses}
-              options={fields}
-            />
+            <SplitExpense onChange={handleExpenses} options={fields} />
           </View>
 
           <Button
             mode="contained"
+            disabled={isFetching || !form.formState.isValid}
             icon="check"
             style={style.submitButton}
             onPress={handleSubmit(submitExpense)}>

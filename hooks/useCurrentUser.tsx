@@ -59,11 +59,9 @@ export const useCurrentUser = (
         navigation?.navigate('SignIn');
       }
 
-      return response;
+      return response.data.user;
     },
   });
-
-  const user = data?.data.user as IUser;
 
   const signIn = async (formData: ISignInPageForm) => {
     const response = await (await authModel).login(formData);
@@ -87,5 +85,5 @@ export const useCurrentUser = (
     },
   });
 
-  return {user, isFetching, signIn, logout};
+  return {user: data as IUser, isFetching, signIn, logout};
 };
