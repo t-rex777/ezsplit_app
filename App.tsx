@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import {StatusBar} from 'react-native';
 import {PaperProvider} from 'react-native-paper';
 import {en, registerTranslation} from 'react-native-paper-dates';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -23,6 +24,7 @@ function App(): React.JSX.Element {
   return (
     <SafeAreaProvider>
       <PaperProvider>
+        <StatusBar barStyle="light-content" translucent />
         {/* <StatusBar
           barStyle={isDarkMode ? 'light-content' : 'dark-content'}
           backgroundColor={backgroundStyle.backgroundColor}

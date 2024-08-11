@@ -16,6 +16,7 @@ export interface ICreateFriendExpenseParams {
   totalAmount: string;
   image: string;
   expenses: IExpense[];
+  createdAt: string;
 }
 
 interface IUpdateFriendExpenseParams extends ICreateFriendExpenseParams {

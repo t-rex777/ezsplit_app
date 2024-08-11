@@ -1,4 +1,5 @@
 import {RouteProp} from '@react-navigation/native';
+import dayjs from 'dayjs';
 import React, {useCallback, useMemo} from 'react';
 import {
   FormProvider,
@@ -6,8 +7,9 @@ import {
   useFieldArray,
   useForm,
 } from 'react-hook-form';
-import {StyleSheet, View} from 'react-native';
-import {Appbar, Button, Chip, Text} from 'react-native-paper';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Appbar, Button, Chip, IconButton, Text} from 'react-native-paper';
+import {DatePickerModal} from 'react-native-paper-dates';
 import {useEffectOnce} from 'react-use';
 import {IFriendExpenseListItem, IFriendExpenses} from '../../api/friendExpense';
 import {EZSelect} from '../../components/EZSelect';
@@ -32,8 +34,8 @@ interface IExpensePageProps extends INavigationProps {
 interface IExpenseForm {
   categoryId: string;
   amount: string;
-  date: Date;
-  description: string;
+  createdAt: Date;
+  name: string;
   notes: string;
   lender: IOption;
   expenses: IExpenseOption[];
@@ -61,9 +63,9 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
     return {
       amount: '',
       categoryId: categories[0].id,
-      description: '',
+      name: '',
       notes: '',
-      date: new Date(),
+      createdAt: new Date(),
       lender: {
         label: user.name,
         value: user.id,
@@ -112,9 +114,9 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
       amount: String(expense.totalAmount),
       categoryId: String(expense.category.id),
 
-      description: expense.name,
+      name: expense.name,
       notes: expense.description,
-      date: new Date(),
+      createdAt: new Date(),
       lender: {
         label: lender.name,
         value: String(lender.id),
@@ -148,30 +150,32 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
     control,
   });
 
-  const [selectedCategory, _date] = watch(['categoryId', 'date']);
+  const [selectedCategory, createdAt] = watch(['categoryId', 'createdAt']);
 
-  // const handleCloseCalendar = React.useCallback(() => {
-  //   setOpenCalendar(false);
-  // }, [setOpenCalendar]);
+  const [openCalendar, setOpenCalendar] = React.useState(false);
 
-  // const handleOpenCalendar = React.useCallback(() => {
-  //   setOpenCalendar(true);
-  // }, []);
+  const handleCloseCalendar = React.useCallback(() => {
+    setOpenCalendar(false);
+  }, [setOpenCalendar]);
 
-  // const onConfirmSingle = React.useCallback(
-  //   (params: any) => {
-  //     setOpenCalendar(false);
-  //     setValue('date', params.date);
-  //   },
-  //   [setValue],
-  // );
+  const handleOpenCalendar = React.useCallback(() => {
+    setOpenCalendar(true);
+  }, []);
+
+  const onConfirmSingle = React.useCallback(
+    (params: any) => {
+      setOpenCalendar(false);
+      setValue('createdAt', params.date);
+    },
+    [setValue],
+  );
 
   const submitExpense: SubmitHandler<IExpenseForm> = React.useCallback(
     async ({
       amount,
       categoryId,
-      date: _submittingDate,
-      description,
+      createdAt: createdDate,
+      name,
       expenses,
       notes,
       lender,
@@ -203,9 +207,11 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
           currency: 'INR',
           description: notes,
           expenses: expenseArray,
+          // TODO: add support
           image: '',
-          name: description,
+          name: name,
           totalAmount: amount,
+          createdAt: createdDate.toISOString(),
         });
       }
 
@@ -216,8 +222,9 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
         description: notes,
         expenses: expenseArray,
         image: '',
-        name: description,
+        name: name,
         totalAmount: amount,
+        createdAt: createdDate.toISOString(),
       });
     },
     [create, expense, form, updateExpense],
@@ -266,6 +273,14 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
     handleCategory(String(defaultValue.categoryId));
   });
 
+  const disableSubmit =
+    isFetching ||
+    !form.formState.isValid ||
+    Number(form.getValues().amount) !==
+      form
+        .getValues()
+        .expenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
+
   return (
     <View>
       <FormProvider {...form}>
@@ -273,7 +288,11 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
           <Appbar.Header>
             <Appbar.BackAction onPress={() => navigation.goBack()} />
             <Appbar.Content title="Add Expense" />
-            <Appbar.Action icon="check" onPress={handleSubmit(submitExpense)} />
+            <Appbar.Action
+              icon="check"
+              disabled={disableSubmit}
+              onPress={handleSubmit(submitExpense)}
+            />
           </Appbar.Header>
         </View>
 
@@ -285,9 +304,9 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
                 validate: (v: string) =>
                   v.length > 0 ? true : 'Required field',
               }}
-              name="description"
+              name="name"
               control={control}
-              error={errors.description?.message}
+              error={errors.name?.message}
               mode="outlined"
               placeholder="For eg. Fruits and Vegetables"
             />
@@ -361,8 +380,7 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
             />
           </View>
 
-          {/* TODO: Add date */}
-          {/* <View>
+          <View>
             <Text variant="titleMedium">Date of expense</Text>
 
             <TouchableOpacity
@@ -371,21 +389,23 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
               <IconButton icon="calendar-month" size={20} />
 
               <Text variant="bodyMedium">
-                {dayjs(date).format('DD-MM-YYYY')}
+                {dayjs(createdAt).format('DD-MM-YYYY')}
               </Text>
 
               <DatePickerModal
+                disableStatusBar={false}
+                disableStatusBarPadding
                 locale="en"
                 mode="single"
                 visible={openCalendar}
                 onDismiss={handleCloseCalendar}
-                date={date}
-                onChange={onConfirmSingle}
+                date={createdAt}
                 onConfirm={onConfirmSingle}
-                presentationStyle="fullScreen"
+                disableSafeTop
+                // onChange={onConfirmSingle}
               />
             </TouchableOpacity>
-          </View> */}
+          </View>
 
           <View>
             <Text variant="titleMedium">Split between 2 people</Text>
@@ -395,11 +415,11 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
 
           <Button
             mode="contained"
-            disabled={isFetching || !form.formState.isValid}
+            disabled={disableSubmit}
             icon="check"
             style={style.submitButton}
             onPress={handleSubmit(submitExpense)}>
-            Add Expense
+            {expense !== undefined ? 'Update Expense' : 'Add Expense'}
           </Button>
         </View>
       </FormProvider>

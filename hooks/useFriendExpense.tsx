@@ -6,6 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import {AxiosResponse} from 'axios';
 import {
   FriendExpense,
   ICreateFriendExpenseParams,
@@ -24,27 +25,26 @@ interface IFriendExpenseListContext {
 interface IFriendExpensesContext {
   friendExpenses: IFriendExpenses[];
   isFetching: boolean;
-  create: UseMutationResult<void, Error, ICreateFriendExpenseParams, unknown>;
-  update: UseMutationResult<
-    void,
+  create: UseMutationResult<
+    AxiosResponse<any, any>,
     Error,
-    ICreateFriendExpenseParams & {
-      expenseId: string;
-    },
+    ICreateFriendExpenseParams,
+    unknown
+  >;
+  update: UseMutationResult<
+    AxiosResponse<any, any>,
+    Error,
+    ICreateFriendExpenseParams & {expenseId: string},
     unknown
   >;
 }
 
-export function friendExpensesKey(friendId?: string, term = ''): QueryKey {
-  if (friendId !== undefined) {
-    return ['friendExpenses', friendId, userQueryKey(), term];
-  }
-
-  return ['friendExpenses', userQueryKey(), term];
+export function friendListKey(): QueryKey {
+  return ['friendList', userQueryKey()];
 }
 
-export function useFriendExpenseKey(expenseId: string): QueryKey {
-  return ['friendExpense', expenseId, friendExpensesKey()];
+export function friendExpensesListKey(friendId: string, term = ''): QueryKey {
+  return ['friendExpenses', 'friendId', friendId, userQueryKey(), term];
 }
 
 /**
@@ -59,7 +59,7 @@ export const useFriendExpenseList = (
   const FriendModel = useModel(FriendExpense);
 
   const {data, isFetching} = useQuery({
-    queryKey: friendExpensesKey(),
+    queryKey: friendListKey(),
     queryFn: async () => {
       const response = await (await FriendModel).all();
 
@@ -106,7 +106,7 @@ export const useFriendExpenses = (
   const FriendModel = useModel(FriendExpense);
 
   const {data, isFetching} = useInfiniteQuery({
-    queryKey: friendExpensesKey(friendId, term),
+    queryKey: friendExpensesListKey(friendId, term),
     initialPageParam: 1,
     queryFn: async ({pageParam = 1}) => {
       const response = await (
@@ -134,34 +134,67 @@ export const useFriendExpenses = (
   });
 
   const create = useMutation({
-    mutationKey: friendExpensesKey(friendId),
+    mutationKey: friendExpensesListKey(friendId),
     mutationFn: async (expense: ICreateFriendExpenseParams) => {
-      await (await FriendModel).create(expense);
+      return await (await FriendModel).create(expense);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: friendExpensesKey(friendId),
+        queryKey: friendExpensesListKey(friendId),
       });
 
-      navigation?.navigate('FriendExpenses');
+      navigation?.goBack();
     },
   });
 
   const update = useMutation({
-    mutationKey: friendExpensesKey(friendId),
+    mutationKey: friendExpensesListKey(friendId, term),
     mutationFn: async (
       expense: ICreateFriendExpenseParams & {expenseId: string},
     ) => {
-      await (await FriendModel).update({id: expense.expenseId, ...expense});
+      return await (
+        await FriendModel
+      ).update({id: expense.expenseId, ...expense});
     },
-    // TODO: handle pagination
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: friendExpensesKey(friendId),
+        queryKey: friendExpensesListKey(friendId, term),
       });
 
-      navigation?.navigate('FriendExpenses');
+      navigation?.goBack();
     },
+    // onMutate: async updatedData => {
+    //   // await queryClient.cancelQueries({
+    //   //   queryKey: friendExpensesListKey(friendId, term),
+    //   // });
+
+    //   const previousData:
+    //     | InfiniteData<TPaginatedResource<IFriendExpenses>, unknown>
+    //     | undefined = queryClient.getQueryData(friendExpensesKey(friendId));
+
+    //   if (previousData !== undefined) {
+    //     const optimisticUpdate = {
+    //       ...previousData,
+    //       pages: [
+    //         {
+    //           ...previousData.pages[0],
+    //           data: previousData.pages[0].data.map(it =>
+    //             Number(it.id) === Number(updatedData.expenseId)
+    //               ? updatedData
+    //               : it,
+    //           ),
+    //         },
+    //       ],
+    //     };
+
+    //     await queryClient.setQueryData(
+    //       friendExpensesListKey(friendId, term),
+    //       optimisticUpdate,
+    //     );
+    //   }
+
+    //   return previousData;
+    // },
   });
 
   return {
@@ -170,29 +203,4 @@ export const useFriendExpenses = (
     create,
     update,
   };
-};
-
-export const useFriendExpense = (
-  expenseId: string,
-  enabled = false,
-): {
-  expense: IFriendExpenses | null;
-  isFetching: boolean;
-} => {
-  const FriendModel = useModel(FriendExpense);
-
-  const {data, isFetching} = useQuery({
-    queryKey: useFriendExpenseKey(expenseId),
-    queryFn: async () => {
-      const response = await (await FriendModel).findExpense(expenseId);
-
-      if (response.status !== 200) {
-        throw new Error('could not fetch friend expenses');
-      }
-      return response.data.data;
-    },
-    enabled,
-  });
-
-  return {expense: data ?? null, isFetching};
 };

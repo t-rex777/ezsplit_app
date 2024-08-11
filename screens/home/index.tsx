@@ -25,6 +25,7 @@ const GroupTabIcon = ({
 const HomeScreen = ({navigation}: IHomeProps): JSX.Element => {
   const {user} = useCurrentUser(navigation);
 
+  // TODO: remove this
   // eslint-disable-next-line no-console
   console.log('\x1b[36m%s\x1b[0m', {user}, 'LOGGER');
 
