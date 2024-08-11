@@ -52,27 +52,37 @@ const PageNavigator = (): JSX.Element => {
       setLoading(true);
       const cred = (await Keychain.getGenericPassword()) as any;
 
-      if (cred !== false) {
-        const token = JSON.parse(cred.password).__rtoken;
+      try {
+        if (cred !== false) {
+          const token = JSON.parse(cred.password).__rtoken;
 
-        const response = await new AuthModel({
-          authorization: `Bearer ${token}`,
-        }).refresh();
+          const response = await new AuthModel({
+            authorization: `Bearer ${token}`,
+          }).refresh();
 
-        if (response.status === 200) {
-          await Keychain.setGenericPassword(
-            cred.username,
-            JSON.stringify({
-              __token: response.data.access_token,
-              __rtoken: response.data.refresh_token,
-            }),
-          );
+          if (response.status === 401) {
+            await Keychain.resetGenericPassword();
+            setIsAuthenticated(false);
+            return;
+          }
+
+          if (response.status === 200) {
+            await Keychain.setGenericPassword(
+              cred.username,
+              JSON.stringify({
+                __token: response.data.access_token,
+                __rtoken: response.data.refresh_token,
+              }),
+            );
+          }
+
+          setIsAuthenticated(true);
         }
-
-        setIsAuthenticated(true);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     })();
   });
 

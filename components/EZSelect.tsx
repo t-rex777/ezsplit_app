@@ -21,6 +21,7 @@ const EZSelect = ({
   placeholder,
   error = '',
   label,
+  defaultValue,
 }: IEZSelectProps): JSX.Element => {
   const [open, setOpen] = useState(false);
 
@@ -43,6 +44,7 @@ const EZSelect = ({
       <Text variant="titleMedium">{label}</Text>
 
       <Controller
+        defaultValue={defaultValue}
         name={name}
         control={control}
         rules={rules}

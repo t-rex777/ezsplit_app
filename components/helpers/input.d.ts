@@ -20,6 +20,7 @@ export interface IExpenseOption {
 export interface IInputProps<T> {
   name: string;
   control: Control<any, any>;
+  defaultValue?: T;
   error?: string;
   placeholder?: string;
   label?: string;
