@@ -1,7 +1,7 @@
 import {useQuery} from '@tanstack/react-query';
 import {Contact} from '../api/contact';
-import {useModel} from './helper';
 import {IUser} from './useCurrentUser';
+import {useModel} from './useModel';
 
 interface IContactContext {
   contacts: IUser[];

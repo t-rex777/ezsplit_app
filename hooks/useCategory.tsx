@@ -1,7 +1,7 @@
 import {useQuery} from '@tanstack/react-query';
 import {Category, ICategory} from '../api/category';
-import {useModel} from './helper';
 import {userQueryKey} from './useCurrentUser';
+import {useModel} from './useModel';
 
 export const userCategoryKey = (id?: string) => {
   if (id !== undefined) {

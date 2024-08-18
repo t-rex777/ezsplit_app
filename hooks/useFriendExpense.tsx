@@ -14,8 +14,8 @@ import {
   IFriendExpenses,
 } from '../api/friendExpense';
 import {INavigationProps} from '../components/PageNavigator';
-import {useModel} from './helper';
 import {userQueryKey} from './useCurrentUser';
+import {useModel} from './useModel';
 
 interface IFriendExpenseListContext {
   friendExpenses: IFriendExpenseListItem[];
@@ -44,7 +44,13 @@ export function friendListKey(): QueryKey {
 }
 
 export function friendExpensesListKey(friendId: string, term = ''): QueryKey {
-  return ['friendExpenses', 'friendId', friendId, userQueryKey(), term];
+  return [
+    'friendExpenses',
+    'friendId',
+    friendId.toString(),
+    userQueryKey(),
+    term.toString(),
+  ];
 }
 
 /**
@@ -72,24 +78,9 @@ export const useFriendExpenseList = (
     enabled: enabled,
   });
 
-  // const create = useMutation({
-  //   mutationKey: friendExpenseKey(),
-  //   mutationFn: async (expense: ICreateFriendExpenseParams) => {
-  //     await (await FriendModel).create(expense);
-  //   },
-  //   onSuccess: async () => {
-  //     await queryClient.invalidateQueries({
-  //       queryKey: friendExpenseKey(),
-  //     });
-
-  //     navigation?.navigate('FriendExpenses');
-  //   },
-  // });
-
   return {
     friendExpenses: data ?? [],
     isFetching,
-    // create,
   };
 };
 
@@ -148,7 +139,6 @@ export const useFriendExpenses = (
   });
 
   const update = useMutation({
-    mutationKey: friendExpensesListKey(friendId, term),
     mutationFn: async (
       expense: ICreateFriendExpenseParams & {expenseId: string},
     ) => {
@@ -159,42 +149,11 @@ export const useFriendExpenses = (
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: friendExpensesListKey(friendId, term),
+        refetchType: 'all',
       });
 
       navigation?.goBack();
     },
-    // onMutate: async updatedData => {
-    //   // await queryClient.cancelQueries({
-    //   //   queryKey: friendExpensesListKey(friendId, term),
-    //   // });
-
-    //   const previousData:
-    //     | InfiniteData<TPaginatedResource<IFriendExpenses>, unknown>
-    //     | undefined = queryClient.getQueryData(friendExpensesKey(friendId));
-
-    //   if (previousData !== undefined) {
-    //     const optimisticUpdate = {
-    //       ...previousData,
-    //       pages: [
-    //         {
-    //           ...previousData.pages[0],
-    //           data: previousData.pages[0].data.map(it =>
-    //             Number(it.id) === Number(updatedData.expenseId)
-    //               ? updatedData
-    //               : it,
-    //           ),
-    //         },
-    //       ],
-    //     };
-
-    //     await queryClient.setQueryData(
-    //       friendExpensesListKey(friendId, term),
-    //       optimisticUpdate,
-    //     );
-    //   }
-
-    //   return previousData;
-    // },
   });
 
   return {

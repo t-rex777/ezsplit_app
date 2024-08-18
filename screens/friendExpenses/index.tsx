@@ -8,10 +8,10 @@ import {Category} from '../../api/category';
 import {IFriendExpenseListItem, IFriendExpenses} from '../../api/friendExpense';
 import {AddExpense} from '../../components/AddExpense';
 import {INavigationProps} from '../../components/PageNavigator';
-import {useModel} from '../../hooks/helper';
 import {userCategoryKey} from '../../hooks/useCategory';
 import {useCurrentUser} from '../../hooks/useCurrentUser';
 import {useFriendExpenses} from '../../hooks/useFriendExpense';
+import {useModel} from '../../hooks/useModel';
 import {theme} from '../../theme';
 import {ExpenseCard} from './expenseCard';
 
