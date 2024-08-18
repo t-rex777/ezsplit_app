@@ -1,6 +1,6 @@
 import React, {useCallback} from 'react';
 import {Dimensions, StyleSheet, View} from 'react-native';
-import {Appbar, Button, IconButton, Text} from 'react-native-paper';
+import {Appbar, Button, Text} from 'react-native-paper';
 import EZAvatar from '../../components/Avatar';
 import {INavigationProps} from '../../components/PageNavigator';
 import {useCurrentUser} from '../../hooks/useCurrentUser';
@@ -40,12 +40,12 @@ const AccountScreen = ({navigation}: IIndexProps): JSX.Element => {
               </View>
             </View>
 
-            <IconButton
+            {/* <IconButton
               icon="pencil"
               size={30}
               // eslint-disable-next-line no-console
               onPress={() => console.log('Pressed')}
-            />
+            /> */}
           </View>
         </View>
       </View>

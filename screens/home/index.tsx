@@ -5,7 +5,6 @@ import {Avatar} from 'react-native-paper';
 import {createMaterialBottomTabNavigator} from 'react-native-paper/react-navigation';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {INavigationProps} from '../../components/PageNavigator';
-import {useCurrentUser} from '../../hooks/useCurrentUser';
 import {theme} from '../../theme';
 import {AccountScreen} from '../account';
 import {FriendScreen} from '../friendList';
@@ -22,12 +21,10 @@ const GroupTabIcon = ({
   icon: string;
 }) => <MaterialCommunityIcons name={icon} color={color} size={26} />;
 
-const HomeScreen = ({navigation}: IHomeProps): JSX.Element => {
-  const {user} = useCurrentUser(navigation);
+const HomeScreen = ({navigation: _}: IHomeProps): JSX.Element => {
+  // const {user} = useCurrentUser(navigation);
 
-  // TODO: remove this
-  // eslint-disable-next-line no-console
-  console.log('\x1b[36m%s\x1b[0m', {user}, 'LOGGER');
+  // console.log('\x1b[36m%s\x1b[0m', {user}, 'LOGGER');
 
   return (
     <Tab.Navigator>

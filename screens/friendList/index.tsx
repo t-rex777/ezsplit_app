@@ -2,7 +2,6 @@ import React from 'react';
 import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
 import {Appbar} from 'react-native-paper';
 import {IFriendExpenseListItem} from '../../api/friendExpense';
-import {AddExpense} from '../../components/AddExpense';
 import {INavigationProps} from '../../components/PageNavigator';
 import {useFriendExpenseList} from '../../hooks/useFriendExpense';
 import {FriendCard} from './friendCard';
@@ -41,9 +40,11 @@ const FriendScreen = ({navigation}: IIndexProps): JSX.Element => {
         </View>
       </ScrollView>
 
+      {/*
+      TODO: add this after adding friends
       <View>
         <AddExpense navigation={navigation} />
-      </View>
+      </View> */}
     </View>
   );
 };
