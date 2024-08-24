@@ -10,6 +10,7 @@ import {useMemo} from 'react';
 import * as Keychain from 'react-native-keychain';
 import {AuthModel} from '../api/auth';
 import {useAuth} from '../components/PageNavigator';
+import {useToast} from '../components/Toast';
 import {ISignInPageForm} from '../screens/signin';
 
 export interface IUser {
@@ -27,7 +28,7 @@ export interface IUser {
 interface ICurrentUser {
   user: IUser;
   isFetching?: boolean;
-  signIn: (formData: ISignInPageForm) => Promise<void>;
+  signIn: UseMutationResult<any, Error, ISignInPageForm, unknown>;
   logout: UseMutationResult<void, Error, void, unknown>;
 }
 
@@ -49,6 +50,7 @@ export const useCurrentUser = (
 
   const auth = useAuth();
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   const {data, isFetching} = useQuery({
     queryKey: userQueryKey(),
@@ -63,21 +65,36 @@ export const useCurrentUser = (
     },
   });
 
-  const signIn = async (formData: ISignInPageForm) => {
-    const response = await (await authModel).login(formData);
+  const signIn = useMutation({
+    mutationFn: async (formData: ISignInPageForm) => {
+      const response = await (await authModel).login(formData);
+      return response.data;
+    },
+    onSuccess: response => {
+      queryClient.setQueryData(userQueryKey(), response.user);
 
-    if (response.status === 200) {
-      await queryClient.setQueryData(userQueryKey(), response.data.user);
+      toast.addMessage(response.user.name + ' logged in successfully!');
 
       auth?.setIsAuthenticated(true);
       navigation.navigate('Home');
-    }
-  };
+    },
+    onError: response => {
+      console.error('Mutation failed');
+
+      toast.addMessage('User not found');
+
+      console.error(response);
+
+      queryClient.setQueryData(userQueryKey(), null);
+    },
+  });
 
   const logout = useMutation({
     mutationKey: userQueryKey(),
     mutationFn: async () => {
       await (await authModel).logout();
+    },
+    onSuccess: async () => {
       await queryClient.setQueryData(userQueryKey(), null);
 
       auth?.setIsAuthenticated(false);

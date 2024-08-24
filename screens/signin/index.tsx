@@ -34,7 +34,8 @@ const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
 
   const handleSignIn: SubmitHandler<ISignInPageForm> = React.useCallback(
     async data => {
-      await signIn(data);
+      await signIn.mutateAsync(data);
+
       navigation.navigate('Home');
     },
     [navigation, signIn],

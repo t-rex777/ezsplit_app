@@ -20,7 +20,10 @@ export class Client {
   async instance(method: Method, resource: string, data = {}) {
     try {
       const axiosInstance = axios.create({
-        baseURL: EZSPLIT_API_URL + this.namespace,
+        baseURL:
+          EZSPLIT_API_URL +
+          (EZSPLIT_API_URL.endsWith('/') ? '' : '/') +
+          this.namespace,
         headers: this.headers,
       });
 

@@ -17,6 +17,12 @@ const FriendScreen = ({navigation}: IIndexProps): JSX.Element => {
     });
   };
 
+  // const {Toast, addMessage} = useToast();
+
+  // useEffectOnce(() => {
+  //   addMessage('test');
+  // });
+
   return (
     <View style={style.container}>
       <View>

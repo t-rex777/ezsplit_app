@@ -6,7 +6,6 @@ import {
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React, {createContext, useContext} from 'react';
 import * as Keychain from 'react-native-keychain';
-
 import {useEffectOnce} from 'react-use';
 import {AuthModel} from '../api/auth';
 import {ExpensePage} from '../screens/addExpense';
@@ -14,6 +13,7 @@ import {FriendExpenses} from '../screens/friendExpenses';
 import {HomeScreen} from '../screens/home';
 import {LoadingPage} from '../screens/loadingPage';
 import {SignInPage} from '../screens/signin';
+import {Toast} from './Toast';
 
 export interface INavigationProps {
   navigation: NavigationProp<ParamListBase>;
@@ -37,6 +37,10 @@ const PageNavigator = (): JSX.Element => {
   const [isLoading, setLoading] = React.useState(false);
 
   useEffectOnce(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
     (async () => {
       setLoading(true);
       const cred = (await Keychain.getGenericPassword()) as any;
@@ -77,6 +81,7 @@ const PageNavigator = (): JSX.Element => {
 
   return (
     <AuthContext.Provider value={{isAuthenticated, setIsAuthenticated}}>
+      <Toast />
       <NavigationContainer>
         <Stack.Navigator>
           {isLoading ? (
