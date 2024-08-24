@@ -22,6 +22,7 @@ DerivedData
 *.xcuserstate
 ios/.xcode.env.local
 
+
 # Android/IntelliJ
 #
 build/
@@ -64,3 +65,7 @@ yarn-error.log
 
 # testing
 /coverage
+
+
+# Env
+.env
