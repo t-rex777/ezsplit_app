@@ -82,6 +82,7 @@ const PageNavigator = (): JSX.Element => {
   return (
     <AuthContext.Provider value={{isAuthenticated, setIsAuthenticated}}>
       <Toast />
+
       <NavigationContainer>
         <Stack.Navigator>
           {isLoading ? (

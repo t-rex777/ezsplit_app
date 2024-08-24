@@ -18,7 +18,7 @@ const PASSWORD_REGEX = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/);
 const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
   const [secure, setSecure] = React.useState(true);
 
-  const {signIn} = useCurrentUser(navigation);
+  const {signIn} = useCurrentUser(navigation, false);
 
   const {
     handleSubmit,

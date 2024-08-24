@@ -43,6 +43,17 @@ export class Client {
         data,
       });
     } catch (error: any) {
+      console.error('Error:', error); // Log the entire error object
+      //   if (error.response) {
+      //     console.log('Data:', error.response.data);
+      //     console.log('Status:', error.response.status);
+      //     console.log('Headers:', error.response.headers);
+      //   } else if (error.request) {
+      //     console.log('Request:', error.request);
+      //   } else {
+      //     console.log('Message:', error.message);
+      //   }
+      //   console.log('Config:', error.config);
       throw error;
     }
   }

@@ -36,6 +36,7 @@ export const userQueryKey = (): QueryKey => ['current-user'];
 
 export const useCurrentUser = (
   navigation: NavigationProp<ParamListBase>,
+  enabled = true,
 ): ICurrentUser => {
   const authModel = useMemo(async () => {
     const key = await Keychain.getGenericPassword();
@@ -53,6 +54,7 @@ export const useCurrentUser = (
   const toast = useToast();
 
   const {data, isFetching} = useQuery({
+    enabled,
     queryKey: userQueryKey(),
     queryFn: async () => {
       const response = await (await authModel).find();

@@ -2,11 +2,10 @@ import {RouteProp} from '@react-navigation/native';
 import {useQueryClient} from '@tanstack/react-query';
 import React, {useCallback, useState} from 'react';
 import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
-import {Appbar, Text, TextInput} from 'react-native-paper';
+import {Appbar, Button, Text, TextInput} from 'react-native-paper';
 import {useDebounce, useEffectOnce} from 'react-use';
 import {Category} from '../../api/category';
 import {IFriendExpenseListItem, IFriendExpenses} from '../../api/friendExpense';
-import {AddExpense} from '../../components/AddExpense';
 import {INavigationProps} from '../../components/PageNavigator';
 import {userCategoryKey} from '../../hooks/useCategory';
 import {useCurrentUser} from '../../hooks/useCurrentUser';
@@ -147,10 +146,27 @@ const FriendExpenses = ({navigation, route}: IFriendExpensesProps) => {
         </ScrollView>
       </View>
       <View>
-        <AddExpense
+        {/* <AddExpense
           navigation={navigation}
           friend={route.params.friendExpense}
-        />
+        /> */}
+
+        <View style={style.container}>
+          <View style={style.btnContainer}>
+            <Button
+              icon="clipboard-list-outline"
+              mode="contained"
+              style={style.button}
+              dark
+              onPress={() =>
+                navigation.navigate('Expense', {
+                  friend: route.params.friendExpense,
+                })
+              }>
+              Add Expense
+            </Button>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -164,6 +180,15 @@ const style = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
+  },
+  button: {
+    borderRadius: 20,
+  },
+  btnContainer: {
+    marginTop: 12,
+    marginBottom: 12,
+    marginLeft: 12,
+    marginRight: 12,
   },
 });
 
