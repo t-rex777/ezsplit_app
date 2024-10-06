@@ -57,7 +57,12 @@ export class AuthModel extends Client {
   }
 
   async register(data: IUserRegister): Promise<AxiosResponse> {
-    return await this.post('register', data);
+    const options = Object.assign({}, data, {
+      image: '',
+      currency: 'INR',
+    });
+
+    return await this.post('register', options);
   }
 
   async logout(): Promise<AxiosResponse> {

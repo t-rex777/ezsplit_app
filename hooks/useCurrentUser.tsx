@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-query';
 import {useMemo} from 'react';
 import * as Keychain from 'react-native-keychain';
-import {AuthModel} from '../api/auth';
+import {AuthModel, IUserRegister} from '../api/auth';
 import {useAuth} from '../components/PageNavigator';
 import {useToast} from '../components/Toast';
 import {ISignInPageForm} from '../screens/signin';
@@ -30,6 +30,7 @@ interface ICurrentUser {
   isFetching?: boolean;
   signIn: UseMutationResult<any, Error, ISignInPageForm, unknown>;
   logout: UseMutationResult<void, Error, void, unknown>;
+  register: UseMutationResult<any, Error, IUserRegister, unknown>;
 }
 
 export const userQueryKey = (): QueryKey => ['current-user'];
@@ -91,6 +92,17 @@ export const useCurrentUser = (
     },
   });
 
+  const register = useMutation({
+    mutationFn: async (formData: IUserRegister) => {
+      const response = await (await authModel).register(formData);
+      return response.data;
+    },
+    onSuccess: () => {
+      auth?.setIsAuthenticated(false);
+      navigation?.navigate('SignIn');
+    },
+  });
+
   const logout = useMutation({
     mutationKey: userQueryKey(),
     mutationFn: async () => {
@@ -104,5 +116,5 @@ export const useCurrentUser = (
     },
   });
 
-  return {user: data as IUser, isFetching, signIn, logout};
+  return {user: data as IUser, isFetching, signIn, logout, register};
 };
