@@ -20,6 +20,7 @@
     "react": "18.2.0",
     "react-hook-form": "^7.49.2",
     "react-native": "0.73.0",
+    "react-native-config": "^1.5.3",
     "react-native-dotenv": "^3.4.9",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-flipper": "^0.212.0",

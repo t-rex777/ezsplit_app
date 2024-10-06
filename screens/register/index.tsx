@@ -11,6 +11,10 @@ import {useCurrentUser} from '../../hooks/useCurrentUser';
 import {theme} from '../../theme';
 import {PASSWORD_REGEX} from '../signin';
 
+interface IFormValues extends Omit<IUserRegister, 'dob'> {
+  dob: Date;
+}
+
 const RegisterScreen = ({navigation}: INavigationProps): JSX.Element => {
   const [secure, setSecure] = React.useState(true);
 
@@ -22,13 +26,16 @@ const RegisterScreen = ({navigation}: INavigationProps): JSX.Element => {
     watch,
     setValue,
     formState: {errors},
-  } = useForm<IUserRegister & {dob: Date}>({
+  } = useForm<IFormValues>({
     mode: 'onChange',
+    defaultValues: {
+      dob: new Date(),
+    },
   });
 
-  const handleRegister: SubmitHandler<IUserRegister> = React.useCallback(
+  const handleRegister: SubmitHandler<IFormValues> = React.useCallback(
     async data => {
-      await register.mutateAsync(data);
+      await register.mutateAsync({...data, dob: data.dob.toISOString()});
     },
     [register],
   );
@@ -59,11 +66,22 @@ const RegisterScreen = ({navigation}: INavigationProps): JSX.Element => {
         rules={{
           validate: (v: string) => (v.length > 0 ? true : 'Required field'),
         }}
+        name="name"
+        control={control}
+        error={errors.email?.message}
+        mode="outlined"
+        placeholder="Enter name"
+      />
+
+      <EZTextInput
+        rules={{
+          validate: (v: string) => (v.length > 0 ? true : 'Required field'),
+        }}
         name="email"
         control={control}
         error={errors.email?.message}
         mode="outlined"
-        placeholder="Enter username"
+        placeholder="Enter email"
       />
 
       <EZTextInput

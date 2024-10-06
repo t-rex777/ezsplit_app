@@ -9,7 +9,7 @@ mkdir -p "$OUTPUT_DIR"
 
 # Run the React Native build command
 echo "Running npx react-app..."
-npx react-native@latest build-android --mode=release || { echo "Error running npx react-app"; exit 1; }
+cd android && ENVFILE=.env.production ./gradlew assembleRelease || { echo "Error running npx react-app"; exit 1; }
 
 # Check if source file exists
 if [ ! -f "$INPUT_DIR" ]; then

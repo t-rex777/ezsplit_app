@@ -1,6 +1,6 @@
-import {EZSPLIT_API_URL} from '@env';
 import axios, {Method} from 'axios';
 import * as AxiosLogger from 'axios-logger';
+import Config from 'react-native-config';
 
 interface IClientParams {
   namespace: string;
@@ -21,8 +21,8 @@ export class Client {
     try {
       const axiosInstance = axios.create({
         baseURL:
-          EZSPLIT_API_URL +
-          (EZSPLIT_API_URL.endsWith('/') ? '' : '/') +
+          Config.EZSPLIT_API_URL +
+          (Config.EZSPLIT_API_URL.endsWith('/') ? '' : '/') +
           this.namespace,
         headers: this.headers,
       });

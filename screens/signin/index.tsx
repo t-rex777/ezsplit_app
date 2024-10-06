@@ -1,6 +1,7 @@
 import React from 'react';
 import {SubmitHandler, useForm} from 'react-hook-form';
 import {StyleSheet, View} from 'react-native';
+import Config from 'react-native-config';
 import {Button, Text} from 'react-native-paper';
 import {EZTextInput} from '../../components/EZTextInput';
 import {INavigationProps} from '../../components/PageNavigator';
@@ -23,7 +24,7 @@ const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
 
   const {signIn} = useCurrentUser(navigation, false);
 
-  const isDevMode = process.env.NODE_ENV === 'development';
+  const isDevMode = Config.IS_DEV;
 
   const {
     handleSubmit,

@@ -21,7 +21,7 @@ export interface IUserRegister {
   image: string;
   dob: string;
   currency: string;
-  groupId: number;
+  groupId?: number;
 }
 
 export class AuthModel extends Client {
@@ -57,12 +57,17 @@ export class AuthModel extends Client {
   }
 
   async register(data: IUserRegister): Promise<AxiosResponse> {
-    const options = Object.assign({}, data, {
-      image: '',
-      currency: 'INR',
-    });
+    try {
+      const options = Object.assign({}, data, {
+        image: '',
+        currency: 'INR',
+      });
 
-    return await this.post('register', options);
+      return await this.post('register', options);
+    } catch (error) {
+      console.error(error);
+      throw new Error('Could not register user');
+    }
   }
 
   async logout(): Promise<AxiosResponse> {
