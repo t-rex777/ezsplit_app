@@ -12,6 +12,7 @@ import {ExpensePage} from '../screens/addExpense';
 import {FriendExpenses} from '../screens/friendExpenses';
 import {HomeScreen} from '../screens/home';
 import {LoadingPage} from '../screens/loadingPage';
+import {RegisterScreen} from '../screens/register';
 import {SignInPage} from '../screens/signin';
 import {Toast} from './Toast';
 
@@ -114,11 +115,19 @@ const PageNavigator = (): JSX.Element => {
                   />
                 </>
               ) : (
-                <Stack.Screen
-                  name="SignIn"
-                  component={SignInPage}
-                  options={{headerShown: false}}
-                />
+                <>
+                  <Stack.Screen
+                    name="SignIn"
+                    component={SignInPage}
+                    options={{headerShown: false}}
+                  />
+
+                  <Stack.Screen
+                    name="Register"
+                    component={RegisterScreen}
+                    options={{headerShown: false}}
+                  />
+                </>
               )}
             </>
           )}

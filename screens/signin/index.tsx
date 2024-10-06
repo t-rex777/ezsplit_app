@@ -1,10 +1,11 @@
 import React from 'react';
 import {SubmitHandler, useForm} from 'react-hook-form';
 import {StyleSheet, View} from 'react-native';
-import {Button} from 'react-native-paper';
+import {Button, Text} from 'react-native-paper';
 import {EZTextInput} from '../../components/EZTextInput';
 import {INavigationProps} from '../../components/PageNavigator';
 import {useCurrentUser} from '../../hooks/useCurrentUser';
+import {theme} from '../../theme';
 
 interface ISignInPageProps extends INavigationProps {}
 
@@ -13,7 +14,9 @@ export interface ISignInPageForm {
   password: string;
 }
 
-const PASSWORD_REGEX = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/);
+export const PASSWORD_REGEX = new RegExp(
+  /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
+);
 
 const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
   const [secure, setSecure] = React.useState(true);
@@ -79,6 +82,15 @@ const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
         onPress={handleSubmit(handleSignIn)}>
         Sign In
       </Button>
+
+      <View style={style.register}>
+        <Text>Don't have an account?</Text>
+        <Text
+          style={style.registerLink}
+          onPress={() => navigation.navigate('Register')}>
+          Register
+        </Text>
+      </View>
     </View>
   );
 };
@@ -96,6 +108,17 @@ const style = StyleSheet.create({
     paddingBottom: 16,
   },
   submitButton: {borderRadius: 5},
+  register: {
+    display: 'flex',
+    gap: 8,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  registerLink: {
+    textDecorationLine: 'underline',
+    color: theme.colors.primary,
+    fontWeight: 'bold',
+  },
 });
 
 export {SignInPage};
