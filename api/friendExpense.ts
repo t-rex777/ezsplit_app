@@ -30,6 +30,7 @@ export interface IFriendExpenseListItem {
   totalAmount: string;
   isLender: boolean;
   currency: string;
+  hasExpense: boolean;
 }
 
 export interface IFriendExpenses {

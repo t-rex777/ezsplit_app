@@ -23,16 +23,20 @@ const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
 
   const {signIn} = useCurrentUser(navigation, false);
 
+  const isDevMode = process.env.NODE_ENV === 'development';
+
   const {
     handleSubmit,
     control,
     formState: {errors},
   } = useForm<ISignInPageForm>({
     mode: 'onChange',
-    defaultValues: {
-      email: 'tester@test.com',
-      password: 'password123',
-    },
+    defaultValues: isDevMode
+      ? {
+          email: 'tester@test.com',
+          password: 'password123',
+        }
+      : {},
   });
 
   const handleSignIn: SubmitHandler<ISignInPageForm> = React.useCallback(

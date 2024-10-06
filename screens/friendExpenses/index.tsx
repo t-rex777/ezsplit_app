@@ -1,6 +1,6 @@
 import {RouteProp} from '@react-navigation/native';
 import {useQueryClient} from '@tanstack/react-query';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
 import {Appbar, Button, Text, TextInput} from 'react-native-paper';
 import {useDebounce, useEffectOnce} from 'react-use';
@@ -75,6 +75,10 @@ const FriendExpenses = ({navigation, route}: IFriendExpensesProps) => {
     [navigation, user.id],
   );
 
+  const hasExpenseWithFriend = useMemo(() => {
+    return route.params?.friendExpense?.hasExpense === true;
+  }, [route.params?.friendExpense?.hasExpense]);
+
   if (isFetching) {
     return (
       <View>
@@ -110,63 +114,68 @@ const FriendExpenses = ({navigation, route}: IFriendExpensesProps) => {
         </View>
 
         <ScrollView contentInsetAdjustmentBehavior="automatic">
-          {friendExpenses.map(expense => {
-            const {
-              category,
-              currency,
-              createdAt,
-              name,
-              users,
-              id,
-              totalAmount,
-            } = expense;
+          {!hasExpenseWithFriend && (
+            <View style={style.empty}>
+              <Text variant="headlineMedium" style={style.textCenter}>
+                Add your first expense
+              </Text>
 
-            const friend = users.find(u => Number(u.id) !== Number(user.id));
+              <Text variant="bodyMedium" style={style.textCenter}>
+                {`you will be adding expense between you and ${route.params?.friendExpense.name}`}
+              </Text>
+            </View>
+          )}
 
-            if (!friend) {
-              return null;
-            }
+          {hasExpenseWithFriend &&
+            friendExpenses.map(expense => {
+              const {
+                category,
+                currency,
+                createdAt,
+                name,
+                users,
+                id,
+                totalAmount,
+              } = expense;
 
-            return (
-              <ExpenseCard
-                key={id}
-                date={createdAt}
-                expenseName={name}
-                currency={currency}
-                friendName={friend.name}
-                categoryName={category.name}
-                totalAmount={totalAmount}
-                friendAmount={friend.amount}
-                categoryImage={category.image}
-                isFriendLender={friend.isLender}
-                onPress={() => handleEditExpense(expense)}
-              />
-            );
-          })}
+              const friend = users.find(u => Number(u.id) !== Number(user.id));
+
+              if (!friend) {
+                return null;
+              }
+
+              return (
+                <ExpenseCard
+                  key={id}
+                  date={createdAt}
+                  expenseName={name}
+                  currency={currency}
+                  friendName={friend.name}
+                  categoryName={category.name}
+                  totalAmount={totalAmount}
+                  friendAmount={friend.amount}
+                  categoryImage={category.image}
+                  isFriendLender={friend.isLender}
+                  onPress={() => handleEditExpense(expense)}
+                />
+              );
+            })}
         </ScrollView>
       </View>
-      <View>
-        {/* <AddExpense
-          navigation={navigation}
-          friend={route.params.friendExpense}
-        /> */}
 
-        <View style={style.container}>
-          <View style={style.btnContainer}>
-            <Button
-              icon="clipboard-list-outline"
-              mode="contained"
-              style={style.button}
-              dark
-              onPress={() =>
-                navigation.navigate('Expense', {
-                  friend: route.params.friendExpense,
-                })
-              }>
-              Add Expense
-            </Button>
-          </View>
-        </View>
+      <View style={style.btnContainer}>
+        <Button
+          icon="clipboard-list-outline"
+          mode="contained"
+          style={style.button}
+          dark
+          onPress={() =>
+            navigation.navigate('Expense', {
+              friend: route.params.friendExpense,
+            })
+          }>
+          Add Expense
+        </Button>
       </View>
     </View>
   );
@@ -175,6 +184,14 @@ const FriendExpenses = ({navigation, route}: IFriendExpensesProps) => {
 const screenHeight = Dimensions.get('window').height;
 
 const style = StyleSheet.create({
+  textCenter: {
+    textAlign: 'center',
+  },
+  empty: {
+    padding: 24,
+    gap: 8,
+    height: screenHeight - 180,
+  },
   container: {
     height: screenHeight,
     display: 'flex',

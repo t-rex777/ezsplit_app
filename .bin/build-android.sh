@@ -1,20 +1,28 @@
 #!/bin/bash
 
 # Set the output directory
-OUTPUT_DIR="/builds"
+OUTPUT_DIR="assets"
+INPUT_DIR="android/app/build/outputs/apk/release/app-release.apk"
 
 # Create the output directory if it doesn't exist
 mkdir -p "$OUTPUT_DIR"
 
 # Run the React Native build command
-npx react-native build-android --mode=release
+echo "Running npx react-app..."
+npx react-native@latest build-android --mode=release || { echo "Error running npx react-app"; exit 1; }
+
+# Check if source file exists
+if [ ! -f "$INPUT_DIR" ]; then
+    echo "Error: Source file not found."
+    exit 1
+fi
 
 # Check if the build was successful
 if [ $? -eq 0 ]; then
     echo "Build completed successfully."
     
-    # Move the build output to the /builds directory
-    mv android/app/build/outputs/bundle/release/*.bundle "$OUTPUT_DIR"
+    # COpy the build output to the /builds directory
+    cp -p "$INPUT_DIR" "$OUTPUT_DIR"
     
     echo "Build artifacts moved to $OUTPUT_DIR"
 else
