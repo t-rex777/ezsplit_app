@@ -1,36 +1,46 @@
-name: Build an apk
+name: 'Build Android app'
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
-  build-and-run:
-    runs-on: ubuntu-latest
-
+  build:
+    runs-on: macos-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: Set up Node.js
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: adopt
+          cache: gradle
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
+          cache: 'yarn'
 
-      - name: Set up Java
-        uses: actions/setup-java@v2
+      - name: Run Yarn Install
+        run: |
+          npm i -g corepack
+          yarn install
+
+      - name: Build application
+        run: |
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Upload application
+        uses: actions/upload-artifact@v2
         with:
-          java-version: '11'
-          distribution: 'adopt'
-          cache: 'gradle'
-
-      - name: Install dependencies
-        run: |
-          cd ./android
-          npm ci
-
-      - name: Run script
-        run: |
-          chmod +x .bin/build-android.sh
-          bash .bin/build-android.sh
+          name: app
+          path: assets/app-release.apk
+          retention-days: 3
