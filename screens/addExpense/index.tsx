@@ -281,6 +281,15 @@ const ExpensePage = ({navigation, route}: IExpensePageProps): JSX.Element => {
         .getValues()
         .expenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
 
+  useEffectOnce(() => {
+    // to trigger validation while updating
+    if (expense === undefined) {
+      return;
+    }
+
+    form.trigger();
+  });
+
   return (
     <View>
       <FormProvider {...form}>

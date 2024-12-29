@@ -24,7 +24,7 @@ const SignInPage = ({navigation}: ISignInPageProps): JSX.Element => {
 
   const {signIn} = useCurrentUser(navigation, false);
 
-  const isDevMode = Config.IS_DEV;
+  const isDevMode = Boolean(Config.IS_DEV);
 
   const {
     handleSubmit,
